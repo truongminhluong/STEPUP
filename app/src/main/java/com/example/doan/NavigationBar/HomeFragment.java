@@ -102,30 +102,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProductsForCategory(Category category) {
-        List<Product> productList = new ArrayList<>();
-        if (category.getName().equalsIgnoreCase("Nike")) {
-            productList.add(new Product(1, "Nike Jordan","$493.00",R.drawable.img, true));
-            productList.add(new Product(2, "Nike Revolution", "$120", R.drawable.ic_nike, true));
-            // Thêm sản phẩm khác theo danh mục Nike
-        } else if (category.getName().equalsIgnoreCase("Puma")) {
-            productList.add(new Product(3, "Puma RS-X", "$130", R.drawable.ic_puma, false));
-            // ...
-        } else if (category.getName().equalsIgnoreCase("Under Armour")) {
-            productList.add(new Product(4, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
-        } else if (category.getName().equalsIgnoreCase("Adidas")) {
-            productList.add(new Product(5, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
-        } else if (category.getName().equalsIgnoreCase("Converse")) {
-            productList.add(new Product(6, "Converse All Star", "$100", R.drawable.ic_converse, false));
-        }
-
-        productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
-            @Override
-            public void onProductClick(Product product) {
-                navigateToProductDetail(product);
-            }
-        });
-        recyclerViewProducts.setAdapter(productAdapter);
-        productAdapter.notifyDataSetChanged();
 
     }
 

@@ -6,6 +6,8 @@ android {
     namespace 'com.example.doan'
     compileSdk 35
 
+//    implementation 'de.hdodenhof:circleimageview:3.1.0'
+
     defaultConfig {
         applicationId "com.example.doan"
         minSdk 24
