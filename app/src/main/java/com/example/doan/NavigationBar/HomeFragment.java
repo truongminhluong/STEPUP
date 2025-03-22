@@ -121,7 +121,7 @@ public class HomeFragment extends Fragment {
         productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
             @Override
             public void onProductClick(Product product) {
-                navigateToProductDetail(product);
+//                navigateToProductDetail(product);
             }
         });
         recyclerViewProducts.setAdapter(productAdapter);
@@ -129,7 +129,7 @@ public class HomeFragment extends Fragment {
 
     }
 
-    // Phương thức chuyển sang màn hình chi tiết sản phẩm
+//     Phương thức chuyển sang màn hình chi tiết sản phẩm
 //    private void navigateToProductDetail(Product product) {
 //        // Tạo Intent để chuyển sang ProductDetailActivity
 //        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
