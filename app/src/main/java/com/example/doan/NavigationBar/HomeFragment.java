@@ -122,6 +122,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onProductClick(Product product) {
 //                navigateToProductDetail(product);
+                Toast.makeText(getContext(), "okok", Toast.LENGTH_SHORT).show();
             }
         });
         recyclerViewProducts.setAdapter(productAdapter);
