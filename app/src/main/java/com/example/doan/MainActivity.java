@@ -51,9 +51,17 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        hideSystemUI();
         setupNavigation();
         setupActionBar();
 
+    }
+
+    private void hideSystemUI() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION  // Ẩn thanh điều hướng
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // Duy trì chế độ fullscreen
+        );
     }
 
     private void setupNavigation() {

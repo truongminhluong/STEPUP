@@ -27,6 +27,7 @@ import com.example.doan.Model.Category;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductNewArrivals;
 import com.example.doan.R;
+import com.example.doan.Screens.ProductDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,8 +122,7 @@ public class HomeFragment extends Fragment {
         productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
             @Override
             public void onProductClick(Product product) {
-//                navigateToProductDetail(product);
-                Toast.makeText(getContext(), "okok", Toast.LENGTH_SHORT).show();
+                navigateToProductDetail(product);
             }
         });
         recyclerViewProducts.setAdapter(productAdapter);
@@ -130,7 +130,12 @@ public class HomeFragment extends Fragment {
 
     }
 
-
+    // Phương thức chuyển sang màn hình chi tiết sản phẩm
+    private void navigateToProductDetail(Product product) {
+        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
+        intent.putExtra("product", product);
+        startActivity(intent);
+    }
 
     private void setupProductNewArrivals(View view) {
         recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
