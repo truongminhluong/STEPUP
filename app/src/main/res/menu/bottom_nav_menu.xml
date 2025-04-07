@@ -10,10 +10,6 @@
         android:icon="@drawable/ic_favorite"
         android:title=""/>
     <item
-        android:id="@+id/cartFragment"
-        android:icon="@drawable/img_2"
-        android:title=""/>
-    <item
         android:id="@+id/notificationFragment"
         android:icon="@drawable/ic_notification"
         android:title="" />

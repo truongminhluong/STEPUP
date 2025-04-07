@@ -27,6 +27,7 @@ import com.example.doan.Model.Category;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductNewArrivals;
 import com.example.doan.R;
+import com.example.doan.Screens.ProductDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,17 +131,11 @@ public class HomeFragment extends Fragment {
     }
 
     // Phương thức chuyển sang màn hình chi tiết sản phẩm
-//    private void navigateToProductDetail(Product product) {
-//        // Tạo Intent để chuyển sang ProductDetailActivity
-//        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
-//        // Truyền dữ liệu sản phẩm (có thể dùng Bundle hoặc putExtra)
-//        intent.putExtra("product_id", product.getId());
-//        intent.putExtra("product_name", product.getName());
-//        intent.putExtra("product_price", product.getPrice());
-//        intent.putExtra("product_image", product.getImageResId());
-//        intent.putExtra("is_best_seller", product.isBestSeller());
-//        startActivity(intent);
-//    }
+    private void navigateToProductDetail(Product product) {
+        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
+        intent.putExtra("product", product);
+        startActivity(intent);
+    }
 
     private void setupProductNewArrivals(View view) {
         recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
