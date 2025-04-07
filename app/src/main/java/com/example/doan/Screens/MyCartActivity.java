@@ -9,12 +9,22 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doan.Adapter.MyCartAdapter;
+import com.example.doan.Model.CartItem;
 import com.example.doan.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyCartActivity extends AppCompatActivity {
 
     private Toolbar mycartToolbar;
+    private RecyclerView recyclerViewMyCart;
+    private MyCartAdapter myCartAdapter;
+    private List<CartItem> cartItemList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,11 +39,14 @@ public class MyCartActivity extends AppCompatActivity {
 
         initViews();
         setupToolbar();
+        loadCartData();
     }
 
 
     private void initViews() {
         mycartToolbar = findViewById(R.id.mycartToolbar);
+        recyclerViewMyCart = findViewById(R.id.recyclerViewMyCart);
+        recyclerViewMyCart.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void setupToolbar() {
@@ -44,5 +57,21 @@ public class MyCartActivity extends AppCompatActivity {
             getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
             actionBar.setTitle("My Cart");
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
+    private void loadCartData() {
+        // Tạo danh sách sản phẩm trong giỏ hàng
+        cartItemList.add(new CartItem("1", "Nike Air Max", 456, R.drawable.img_7, 1));
+        cartItemList.add(new CartItem("2", "Adidas Boost", 333, R.drawable.img_7, 1));
+
+        // Khởi tạo adapter và gán vào RecyclerView
+        myCartAdapter = new MyCartAdapter(cartItemList);
+        recyclerViewMyCart.setAdapter(myCartAdapter);
     }
 }

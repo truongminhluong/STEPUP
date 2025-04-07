@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,7 +27,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private Toolbar detailToolbar;
     private ImageView ivProductDetailImage;
     private TextView tvProductDetailName, tvProductDetailPrice, tvProductDetailDescription;
-
+    private Button btnAddToCart;
     private Product product;
 
 
@@ -45,6 +46,14 @@ public class ProductDetailActivity extends AppCompatActivity {
         setupToolbar();
         loadProductData();
 
+        btnAddToCart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     // Ánh xạ các view
@@ -54,6 +63,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvProductDetailName = findViewById(R.id.tvPDName);
         tvProductDetailPrice = findViewById(R.id.tvPDPrice);
         tvProductDetailDescription = findViewById(R.id.tvPDlDescription);
+        btnAddToCart = findViewById(R.id.btnAddToCart);
     }
 
     private void setupToolbar() {
@@ -72,7 +82,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             product = (Product) intent.getSerializableExtra("product");
             if (product != null) {
                 tvProductDetailName.setText(product.getName());
-                tvProductDetailPrice.setText(product.getPrice()); // Hiển thị giá dạng 1,000,000 VNĐ
+                tvProductDetailPrice.setText(product.getPrice());
                 ivProductDetailImage.setImageResource(product.getImage());
                 tvProductDetailDescription.setText("Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....");  // Mô tả từ dữ liệu
             }

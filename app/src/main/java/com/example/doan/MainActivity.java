@@ -1,5 +1,6 @@
 package com.example.doan;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan.Adapter.CategoryAdapter;
+import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.navigation.fragment.NavHostFragment;
@@ -26,6 +28,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Model.Category;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.Build;
 import android.util.Log;
@@ -35,7 +38,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText searchEdt;
+    private FloatingActionButton fab;
 
 
 
@@ -54,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         hideSystemUI();
         setupNavigation();
         setupActionBar();
+        setupFab();
 
     }
 
@@ -120,6 +124,17 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setupFab() {
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 }
