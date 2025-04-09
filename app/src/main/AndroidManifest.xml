@@ -13,20 +13,23 @@
         android:theme="@style/Theme.Doan"
         tools:targetApi="31">
         <activity
+            android:name=".EditProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".AccountSettingsActivity"
             android:exported="false" />
-        <activity
-            android:name=".SearchActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activityProfile"
-            android:exported="false" />
-        <activity
-            android:name=".Adapter.CategoryAdapter"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".SearchActivity"-->
+<!--            android:exported="false" />-->
+<!--        <activity-->
+<!--            android:name=".ProfileActivity"-->
+<!--            android:exported="false" /> -->
+        <!-- <activity -->
+        <!-- android:name=".activityProfile" -->
+        <!-- android:exported="false" /> -->
+        <!-- <activity -->
+        <!-- android:name=".Adapter.CategoryAdapter" -->
+        <!-- android:exported="false" /> -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
