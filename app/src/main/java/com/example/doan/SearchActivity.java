@@ -1,7 +1,9 @@
 package com.example.doan;
 
-
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -11,15 +13,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doan.Adapter.SearchAdapter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    EditText etSearch;
-    TextView tvCancel;
-    ImageButton btnBack;
+    private RecyclerView recyclerView;
+    private EditText etSearch;
+    private TextView tvCancel;
+    private ImageButton btnBack;
+    private SearchAdapter adapter;
+
+    private List<String> allItems;
+    private List<String> filteredItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +40,8 @@ public class SearchActivity extends AppCompatActivity {
         tvCancel = findViewById(R.id.tvCancel);
         btnBack = findViewById(R.id.btnBack);
 
-        List<String> shoes = Arrays.asList(
+        // Danh sách dữ liệu mẫu
+        allItems = Arrays.asList(
                 "Nike Air Max Shoes",
                 "Nike Jordan Shoes",
                 "Nike Air Force Shoes",
@@ -40,13 +50,58 @@ public class SearchActivity extends AppCompatActivity {
                 "Regular Shoes"
         );
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new SearchAdapter(shoes));
+        // Khởi tạo danh sách lọc
+        filteredItems = new ArrayList<>(allItems);
 
+
+        // Thiết lập RecyclerView
+        adapter = new SearchAdapter(filteredItems);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+
+        // Nút quay lại
         btnBack.setOnClickListener(v -> finish());
 
-        tvCancel.setOnClickListener(v ->
-                Toast.makeText(this, "Cancel clicked", Toast.LENGTH_SHORT).show()
-        );
+        // Nút Cancel
+        tvCancel.setOnClickListener(v -> {
+            etSearch.setText("");
+            hideKeyboard();
+            Toast.makeText(this, "Cancel clicked", Toast.LENGTH_SHORT).show();
+        });
+
+        // Bắt sự kiện nhập text
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void filterList(String query) {
+        filteredItems.clear();
+        if (query.isEmpty()) {
+            filteredItems.addAll(allItems);
+        } else {
+            for (String item : allItems) {
+                if (item.toLowerCase().contains(query.toLowerCase())) {
+                    filteredItems.add(item);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        }
     }
 }

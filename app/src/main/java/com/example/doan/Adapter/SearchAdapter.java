@@ -1,6 +1,5 @@
 package com.example.doan.Adapter;
 
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,16 +11,21 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doan.R;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
 
-    private final Context context;
-    private final List<String> searchList;
+    private Context context;
+    private final List<String> originalList;
+    private final List<String> filteredList;
 
-    public SearchAdapter(Context context, List<String> searchList) {
+    public SearchAdapter(List<String> searchList) {
         this.context = context;
-        this.searchList = searchList;
+        this.originalList = new ArrayList<>(searchList);
+        this.filteredList = new ArrayList<>(searchList);
     }
 
     @NonNull
@@ -33,9 +37,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
-        String item = searchList.get(position);
+        String item = filteredList.get(position);
         holder.tvText.setText(item);
-        holder.ivIcon.setImageResource(R.drawable.ic_history); // icon đồng hồ lịch sử
+        holder.ivIcon.setImageResource(R.drawable.ic_history); // icon lịch sử tìm kiếm
 
         holder.itemView.setOnClickListener(v ->
                 Toast.makeText(context, "Clicked: " + item, Toast.LENGTH_SHORT).show()
@@ -44,7 +48,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     @Override
     public int getItemCount() {
-        return searchList.size();
+        return filteredList.size();
+    }
+
+    // Thêm hàm lọc nếu cần tìm kiếm
+    public void filter(String query) {
+        filteredList.clear();
+        if (query.isEmpty()) {
+            filteredList.addAll(originalList);
+        } else {
+            for (String item : originalList) {
+                if (item.toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     public static class SearchViewHolder extends RecyclerView.ViewHolder {
