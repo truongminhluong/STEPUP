@@ -19,6 +19,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan.Adapter.CategoryAdapter;
+import com.example.doan.Auth.SignInActivity;
 import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -29,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Model.Category;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 
 import android.os.Build;
 import android.util.Log;
@@ -39,8 +41,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +59,19 @@ public class MainActivity extends AppCompatActivity {
         setupActionBar();
         setupFab();
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Kiểm tra xem người dùng đã đăng nhập hay chưa
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            // Chưa đăng nhập → chuyển về trang đăng nhập
+            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+            startActivity(intent);
+            finish(); // Không cho quay lại Main nếu chưa login
+        }
+        // Nếu đã đăng nhập thì tiếp tục ở lại MainActivity như bình thường
     }
 
     private void hideSystemUI() {
@@ -118,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == android.R.id.home) {
             Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show();
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+            startActivity(intent);
+            finish();
             return true;
         }else if (id == R.id.action_cart) {
             Toast.makeText(this, "Gio hang", Toast.LENGTH_SHORT).show();
