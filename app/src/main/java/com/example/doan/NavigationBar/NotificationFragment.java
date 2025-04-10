@@ -1,66 +1,56 @@
 package com.example.doan.NavigationBar;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.doan.Adapter.NotificationAdapter;
+import com.example.doan.Model.Notification;
 import com.example.doan.R;
+import com.example.doan.OrderTrackingActivity;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NotificationFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class NotificationFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private RecyclerView recyclerNotification;
+    private NotificationAdapter adapter;
+    private List<Notification> notificationList;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
-    public NotificationFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NotificationFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static NotificationFragment newInstance(String param1, String param2) {
-        NotificationFragment fragment = new NotificationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_notification, container, false);
+        View view = inflater.inflate(R.layout.fragment_notification, container, false);
+
+        recyclerNotification = view.findViewById(R.id.recyclerNotification);
+        recyclerNotification.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Khởi tạo danh sách thông báo
+        notificationList = new ArrayList<>();
+        notificationList.add(new Notification("Đơn hàng #1234", "Đang giao", "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg"));
+        notificationList.add(new Notification("Đơn hàng #5678", "Đã giao", "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg"));
+        notificationList.add(new Notification("Đơn hàng #91011", "Đang xử lý", "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg"));
+
+        // Tạo adapter và gán vào RecyclerView
+        adapter = new NotificationAdapter(getContext(), notificationList, notification -> {
+            // Khi bấm vào một item, chuyển sang màn hình theo dõi đơn hàng
+            Intent intent = new Intent(getActivity(), OrderTrackingActivity.class);
+            startActivity(intent);
+        });
+
+        recyclerNotification.setAdapter(adapter);
+
+        return view;
     }
 }
