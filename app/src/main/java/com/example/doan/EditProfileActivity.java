@@ -49,18 +49,8 @@ public class EditProfileActivity extends AppCompatActivity {
                 return;
             }
 
-            // Thực hiện lưu thông tin (hoặc gửi dữ liệu qua API, lưu vào cơ sở dữ liệu)
-            // Ví dụ: Hiển thị thông báo khi lưu thành công
             Toast.makeText(this, "Thông tin đã được lưu!", Toast.LENGTH_SHORT).show();
 
-            // Nếu muốn lưu vào SharedPreferences, hoặc gửi qua API, bạn có thể làm ở đây
-            // Ví dụ với SharedPreferences:
-            // SharedPreferences sharedPreferences = getSharedPreferences("user_info", MODE_PRIVATE);
-            // SharedPreferences.Editor editor = sharedPreferences.edit();
-            // editor.putString("full_name", fullName);
-            // editor.putString("email", email);
-            // editor.putString("password", password);
-            // editor.apply();
         });
     }
 }
