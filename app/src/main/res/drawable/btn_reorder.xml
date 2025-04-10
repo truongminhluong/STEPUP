@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF5733" /> <!-- Màu nền cam -->
+    <corners android:radius="24dp" /> <!-- Bo góc -->
+    <stroke android:color="#E64A19" android:width="2dp"/> <!-- Đường viền màu đỏ -->
+</shape>

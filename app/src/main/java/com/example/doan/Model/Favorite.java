@@ -1,50 +1,22 @@
 package com.example.doan.Model;
 
 public class Favorite {
-    private String name;
-    private double price;
-    private String imageUrl;
-    private boolean isFavourite;
+    private String name, tag, price, imageUrl;
+    private boolean isFavorite;
 
-    public Favorite() {
-    }
-
-    public Favorite(String name, double price, String imageUrl, boolean isFavourite) {
+    public Favorite(String name, String tag, String price, String imageUrl, boolean isFavorite) {
         this.name = name;
+        this.tag = tag;
         this.price = price;
         this.imageUrl = imageUrl;
-        this.isFavourite = isFavourite;
+        this.isFavorite = isFavorite;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public String getTag() { return tag; }
+    public String getPrice() { return price; }
+    public String getImageUrl() { return imageUrl; }
+    public boolean isFavorite() { return isFavorite; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public boolean isFavourite() {
-        return isFavourite;
-    }
-
-    public void setFavourite(boolean favourite) {
-        isFavourite = favourite;
-    }
+    public void setFavorite(boolean favorite) { isFavorite = favorite; }
 }

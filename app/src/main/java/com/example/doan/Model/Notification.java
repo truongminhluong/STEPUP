@@ -1,38 +1,27 @@
 package com.example.doan.Model;
 
 public class Notification {
-    private String orderName;
-    private String status;
+    private String title;
+    private String price;
+    private String oldPrice;
+    private String time;
     private String imageUrl;
+    private boolean isRead;
 
-    public Notification(String orderName, String status, String imageUrl) {
-        this.orderName = orderName;
-        this.status = status;
+    public Notification(String title, String price, String oldPrice, String time, String imageUrl, boolean isRead) {
+        this.title = title;
+        this.price = price;
+        this.oldPrice = oldPrice;
+        this.time = time;
         this.imageUrl = imageUrl;
+        this.isRead = isRead;
     }
 
-
-    public String getOrderName() {
-        return orderName;
-    }
-
-    public void setOrderName(String orderName) {
-        this.orderName = orderName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    // Getters
+    public String getTitle() { return title; }
+    public String getPrice() { return price; }
+    public String getOldPrice() { return oldPrice; }
+    public String getTime() { return time; }
+    public String getImageUrl() { return imageUrl; }
+    public boolean isRead() { return isRead; }
 }

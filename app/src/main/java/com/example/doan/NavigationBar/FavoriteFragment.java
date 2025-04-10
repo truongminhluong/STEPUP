@@ -1,53 +1,60 @@
 package com.example.doan.NavigationBar;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
-import com.example.doan.Adapter.FavouriteAdapter;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.doan.Adapter.FavoriteAdapter;
 import com.example.doan.Model.Favorite;
 import com.example.doan.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class FavoriteFragment extends Fragment {
 
-    private RecyclerView recyclerFavourite;
-    private FavouriteAdapter adapter;
-    private List<Favorite> favouriteList;
+    private RecyclerView recyclerView;
+    private FavoriteAdapter adapter;
+    private List<Favorite> favoriteList;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_favorite, container, false);
+        setHasOptionsMenu(false);
 
-        recyclerFavourite = view.findViewById(R.id.recyclerFavourite);
-        recyclerFavourite.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        // Ẩn Navigation Bar (ActionBar)
+        if (getActivity() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        }
 
-        // Khởi tạo danh sách Favourite
-        favouriteList = new ArrayList<>();
-        favouriteList.add(new Favorite("Nike Jordan", 58.7, "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg", true));
-        favouriteList.add(new Favorite("Nike Air Max", 37.8, "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg", false));
-        favouriteList.add(new Favorite("Nike Club Max", 41.7, "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg", true));
-        favouriteList.add(new Favorite("Nike Zoom", 57.6, "https://trungsneaker.com/wp-content/uploads/2022/12/giay-nike-court-vision-mid-smoke-grey-dn3577-002-44.jpg", false));
+        recyclerView = view.findViewById(R.id.recyclerFavourite);
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        Log.d("DEBUG", "Favourite List Size: " + favouriteList.size()); // Kiểm tra dữ liệu
+        favoriteList = new ArrayList<>();
+        favoriteList.add(new Favorite("Nike Jordan", "BEST SELLER", "$58.7",
+                "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", true));
+        favoriteList.add(new Favorite("Nike Air Max", "BEST SELLER", "$37.8",
+                "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/d3961fd7-4607-4aa2-8881-0c6ad91f6d77/air-max-dawn-shoes-J1cZzQ.png", false));
+        // Add more...
 
-        // Khởi tạo adapter và gán cho RecyclerView
-        adapter = new FavouriteAdapter(getContext(), favouriteList);
-        recyclerFavourite.setAdapter(adapter);
-        adapter.notifyDataSetChanged(); // Cập nhật RecyclerView
+        adapter = new FavoriteAdapter(favoriteList, getContext());
+        recyclerView.setAdapter(adapter);
+
+        // Nút back
+        ImageView backBtn = view.findViewById(R.id.ivBack);
+        backBtn.setOnClickListener(v -> requireActivity().onBackPressed());
 
         return view;
     }

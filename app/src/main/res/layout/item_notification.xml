@@ -1,42 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="12dp">
 
-    <!-- ImageView cho hình ảnh đơn hàng -->
+    <!-- Hình ảnh sản phẩm -->
     <ImageView
-        android:id="@+id/imgOrder"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:id="@+id/imgProduct"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
         android:src="@drawable/img_1"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- TextView cho tên đơn hàng -->
+    <!-- Thời gian -->
     <TextView
-        android:id="@+id/txtOrderName"
-        android:layout_width="0dp"
+        android:id="@+id/txtTime"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tên đơn hàng"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="@color/black"
+        android:text="6 min ago"
+        android:textSize="12sp"
+        android:textColor="#999999"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/imgOrder"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- TextView cho trạng thái đơn hàng -->
-    <TextView
-        android:id="@+id/txtStatus"
+    <!-- Dấu chấm (dot) nhỏ dưới thời gian -->
+    <View
+        android:id="@+id/viewDot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/bg_dot"
+        app:layout_constraintTop_toBottomOf="@id/txtTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="4dp" />
+
+    <!-- Thông tin sản phẩm (Tên, Giá và Giá cũ) -->
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Trạng thái"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/txtOrderName"
-        app:layout_constraintStart_toEndOf="@id/imgOrder"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/imgProduct"
+        app:layout_constraintEnd_toStartOf="@id/txtTime"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/imgProduct"
+        app:layout_constraintTop_toTopOf="@id/imgProduct"
+        app:layout_constraintVertical_bias="0.071">
+
+        <!-- Tên sản phẩm -->
+        <TextView
+            android:id="@+id/txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="We Have New Products With Offers"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#000000"/>
+
+        <!-- Giá sản phẩm (bao gồm giá cũ và giá mới) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Giá hiện tại -->
+            <TextView
+                android:id="@+id/txtPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="$364.95"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#FF5733"/>
+
+            <!-- Giá cũ -->
+            <!-- Sửa lại phần này -->
+            <TextView
+                android:id="@+id/txtOldPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$260.00"
+                android:textSize="14sp"
+                android:textColor="#999999" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
