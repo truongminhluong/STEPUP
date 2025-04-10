@@ -1,12 +1,15 @@
 package com.example.doan;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -14,36 +17,36 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.example.doan.Adapter.CategoryAdapter;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.doan.Model.Category;
 
-import android.os.Build;
-import android.util.Log;
+import com.bumptech.glide.Glide;
+import com.example.doan.Screens.MyCartActivity;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText searchEdt;
+    private FloatingActionButton fab;
+    private DrawerLayout drawerLayout;
+    private BottomNavigationView bottomNavigationView;
 
-
-
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        drawerLayout = findViewById(R.id.main);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -51,9 +54,56 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        hideSystemUI();
         setupNavigation();
         setupActionBar();
+        setupFab();
 
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvName = headerView.findViewById(R.id.tv_user_name);
+        TextView tvHello = headerView.findViewById(R.id.tv_hello);
+        ImageView imgAvatar = headerView.findViewById(R.id.img_avatar);
+
+        tvName.setText("Alisson Becker");
+        tvHello.setText("Hey, 👋");
+
+        Glide.with(this)
+                .load("https://yourdomain.com/avatar.jpg")
+                .placeholder(R.drawable.avatar_sample)
+                .into(imgAvatar);
+
+        LinearLayout signOutLayout = findViewById(R.id.sign_out_container);
+        signOutLayout.setOnClickListener(v -> {
+            // Sign out logic here
+        });
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            NavController navController = ((NavHostFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.nav_host_fragment)).getNavController();
+
+            int id = item.getItemId();
+
+            if (id == R.id.nav_BestSeller) {
+                startActivity(new Intent(MainActivity.this, BestSellerActivity.class));
+            } else if (id == R.id.nav_home) {
+                bottomNavigationView.setSelectedItemId(R.id.homeFragment);
+            } else if (id == R.id.nav_notifications) {
+                bottomNavigationView.setSelectedItemId(R.id.notificationFragment);
+            } else if (id == R.id.nav_profile) {
+                bottomNavigationView.setSelectedItemId(R.id.profileFragment);
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+    }
+
+    private void hideSystemUI() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
     }
 
     private void setupNavigation() {
@@ -62,10 +112,21 @@ public class MainActivity extends AppCompatActivity {
 
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
-
-            // Liên kết Navigation Component với BottomNavigationView
-            BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+            bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.profileFragment) {
+                    // ✅ Mở ProfileActivity thay vì Fragment
+                    Intent intent = new Intent(MainActivity.this, com.example.doan.ProfileActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+
+                // Các tab khác vẫn hoạt động như mặc định
+                return NavigationUI.onNavDestinationSelected(item, navController);
+            });
         } else {
             throw new IllegalStateException("NavHostFragment not found. Check your XML layout.");
         }
@@ -80,9 +141,15 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
             actionBar.setDisplayShowTitleEnabled(false);
-//            actionBar.setLogo(R.drawable.ic_logo);
         }
+    }
 
+    private void setupFab() {
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -91,12 +158,13 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.main_menu, menu);
 
         MenuItem cartItem = menu.findItem(R.id.action_cart);
-        View ationView = cartItem.getActionView();
-        if (ationView != null) {
-            ationView.setOnClickListener(view -> {
-                Toast.makeText(this, "Gio hang", Toast.LENGTH_SHORT).show();
+        View actionView = cartItem.getActionView();
+        if (actionView != null) {
+            actionView.setOnClickListener(view -> {
+                // Xử lý khi bấm giỏ hàng
             });
         }
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -105,14 +173,12 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show();
+            drawerLayout.openDrawer(GravityCompat.START);
             return true;
-        }else if (id == R.id.action_cart) {
-            Toast.makeText(this, "Gio hang", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.action_cart) {
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
-
 }
-

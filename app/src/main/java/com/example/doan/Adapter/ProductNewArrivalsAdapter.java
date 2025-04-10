@@ -1,6 +1,5 @@
 package com.example.doan.Adapter;
 
-import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductNewArrivals;
 import com.example.doan.R;
 
@@ -19,9 +17,15 @@ import java.util.List;
 public class ProductNewArrivalsAdapter extends RecyclerView.Adapter<ProductNewArrivalsAdapter.ProductNewArrivalsViewHolder> {
 
     private List<ProductNewArrivals> productNewArrivalsList;
+    private OnItemClickListener listener;
 
-    public ProductNewArrivalsAdapter(List<ProductNewArrivals> productNewArrivalsList) {
+    public interface OnItemClickListener {
+        void onItemClick(ProductNewArrivals product);
+    }
+
+    public ProductNewArrivalsAdapter(List<ProductNewArrivals> productNewArrivalsList, OnItemClickListener listener) {
         this.productNewArrivalsList = productNewArrivalsList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -34,7 +38,7 @@ public class ProductNewArrivalsAdapter extends RecyclerView.Adapter<ProductNewAr
     @Override
     public void onBindViewHolder(@NonNull ProductNewArrivalsViewHolder holder, int position) {
         ProductNewArrivals productNewArrivals = productNewArrivalsList.get(position);
-        holder.bind(productNewArrivals);
+        holder.bind(productNewArrivals, listener);
     }
 
     @Override
@@ -42,28 +46,30 @@ public class ProductNewArrivalsAdapter extends RecyclerView.Adapter<ProductNewAr
         return productNewArrivalsList.size();
     }
 
-    public class ProductNewArrivalsViewHolder extends RecyclerView.ViewHolder {
+    public static class ProductNewArrivalsViewHolder extends RecyclerView.ViewHolder {
         private ImageView imgProductNew;
         private TextView txtBestChoice, txtProductNewName, txtProductNewPrice;
+
         public ProductNewArrivalsViewHolder(@NonNull View itemView) {
             super(itemView);
-
             imgProductNew = itemView.findViewById(R.id.imgProductNew);
             txtBestChoice = itemView.findViewById(R.id.txtBestChoice);
             txtProductNewName = itemView.findViewById(R.id.txtProductNewName);
             txtProductNewPrice = itemView.findViewById(R.id.txtProductNewPrice);
         }
 
-        public void bind(ProductNewArrivals productNewArrivals) {
-            txtProductNewName.setText(productNewArrivals.getName());
-            txtProductNewPrice.setText(productNewArrivals.getPrice());
-            if (productNewArrivals.isBestChoice()) {
-                txtBestChoice.setVisibility(View.VISIBLE);
-            } else {
-                txtBestChoice.setVisibility(View.GONE);
-            }
+        public void bind(ProductNewArrivals product, OnItemClickListener listener) {
+            txtProductNewName.setText(product.getName());
+            txtProductNewPrice.setText(product.getPrice());
+            imgProductNew.setImageResource(product.getImageResource());
+
+            txtBestChoice.setVisibility(product.isBestChoice() ? View.VISIBLE : View.GONE);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemClick(product);
+                }
+            });
         }
     }
-
-
 }

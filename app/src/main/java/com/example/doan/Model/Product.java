@@ -1,11 +1,14 @@
 package com.example.doan.Model;
 
-public class Product {
+import java.io.Serializable;
+
+public class Product implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int id;
     private String name;
-    private  String price;
+    private String price;
     private int image;
-    private  boolean bestSeller;
+    private boolean bestSeller;
 
     public Product(int id, String name, String price, int image, boolean bestSeller) {
         this.id = id;
@@ -39,11 +42,11 @@ public class Product {
         this.price = price;
     }
 
-    public int getImage() {
+    public int getImageResId() {
         return image;
     }
 
-    public void setImage(int image) {
+    public void setImageResId(int image) {
         this.image = image;
     }
 

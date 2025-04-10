@@ -29,6 +29,11 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Nút quay lại
         btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
+
 
         // Nút chỉnh sửa (demo Toast, bạn có thể mở EditText để cho chỉnh sửa ở đây)
         btnEdit.setOnClickListener(v -> {

@@ -1,20 +1,28 @@
 package com.example.doan.Model;
 
-public class ProductNewArrivals {
+import java.io.Serializable;
+
+public class ProductNewArrivals implements Serializable {
     private int id;
     private String name;
-    private  String price;
-    private int image;
-    private  boolean bestChoice;
+    private String price;
+    private int imageResource;
+    private boolean isNew;
+    private boolean bestChoice;  // Thêm thuộc tính này
+    private String description;  // Thêm thuộc tính description
 
-    public ProductNewArrivals(int id, String name, String price, int image, boolean bestChoice) {
+    // Constructor
+    public ProductNewArrivals(int id, String name, String price, int imageResource, boolean isNew, boolean bestChoice, String description) {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.image = image;
+        this.imageResource = imageResource;
+        this.isNew = isNew;
         this.bestChoice = bestChoice;
+        this.description = description;  // Khởi tạo description
     }
 
+    // Getter và Setter cho các thuộc tính
     public int getId() {
         return id;
     }
@@ -39,12 +47,20 @@ public class ProductNewArrivals {
         this.price = price;
     }
 
-    public int getImage() {
-        return image;
+    public int getImageResource() {
+        return imageResource;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setImageResource(int imageResource) {
+        this.imageResource = imageResource;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 
     public boolean isBestChoice() {
@@ -53,5 +69,14 @@ public class ProductNewArrivals {
 
     public void setBestChoice(boolean bestChoice) {
         this.bestChoice = bestChoice;
+    }
+
+    // Getter và Setter cho description
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

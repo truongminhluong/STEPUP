@@ -3,6 +3,7 @@ package com.example.doan;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -40,7 +41,10 @@ public class SearchActivity extends AppCompatActivity {
         tvCancel = findViewById(R.id.tvCancel);
         btnBack = findViewById(R.id.btnBack);
 
-        // Danh sách dữ liệu mẫu
+        // ✅ Clear focus để tránh bật bàn phím ngay khi vào
+        etSearch.clearFocus();
+
+        // ✅ Danh sách dữ liệu mẫu
         allItems = Arrays.asList(
                 "Nike Air Max Shoes",
                 "Nike Jordan Shoes",
@@ -50,26 +54,28 @@ public class SearchActivity extends AppCompatActivity {
                 "Regular Shoes"
         );
 
-        // Khởi tạo danh sách lọc
+        // ✅ Khởi tạo danh sách lọc
         filteredItems = new ArrayList<>(allItems);
 
-
-        // Thiết lập RecyclerView
+        // ✅ Thiết lập RecyclerView
         adapter = new SearchAdapter(filteredItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // Nút quay lại
-        btnBack.setOnClickListener(v -> finish());
+        // ✅ Nút quay lại
+        btnBack.setOnClickListener(v -> {
+            hideKeyboard();
+            finish();
+        });
 
-        // Nút Cancel
+        // ✅ Nút Cancel
         tvCancel.setOnClickListener(v -> {
             etSearch.setText("");
             hideKeyboard();
-            Toast.makeText(this, "Cancel clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Search cleared", Toast.LENGTH_SHORT).show();
         });
 
-        // Bắt sự kiện nhập text
+        // ✅ Bắt sự kiện tìm kiếm
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -99,9 +105,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        if (getCurrentFocus() != null) {
-            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 }
