@@ -1,6 +1,8 @@
 package com.example.doan;
 
 import android.os.Bundle;
+import android.widget.ImageButton;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,6 +26,8 @@ public class SeeAllShoesActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
         setContentView(R.layout.activity_see_all_shoes);
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish()); // Quay lại màn trước
 
         recyclerView = findViewById(R.id.recyclerSeeAllShoes);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
