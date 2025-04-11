@@ -20,6 +20,9 @@ public class OrderTrackingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
         setContentView(R.layout.activity_order_tracking);
 
         // Ánh xạ các View
@@ -36,7 +39,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         String orderStatus = "Đang giao";
         String productName = "Nike Air Max";
         String price = "$500.00";
-        String imageUrl = "https://via.placeholder.com/150"; // Thay bằng URL thật nếu có
+        String imageUrl = "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg"; // Thay bằng URL thật nếu có
 
         // Cập nhật giao diện
         txtOrderTitle.setText(orderTitle);

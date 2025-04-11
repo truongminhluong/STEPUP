@@ -47,11 +47,11 @@ public class NotificationFragment extends Fragment {
         listYesterday = new ArrayList<>();
 
         // Dữ liệu giả cho Today
-        listToday.add(new Notification("Giảm 50% toàn bộ sản phẩm", "$300", "$600", "2 phút trước", "https://i.imgur.com/abc123.png", false));
-        listToday.add(new Notification("Ưu đãi cuối tuần", "$250", "$500", "1 giờ trước", "https://i.imgur.com/abc123.png", true));
+        listToday.add(new Notification("Giảm 50% toàn bộ sản phẩm", "$300", "$600", "2 phút trước", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", false));
+        listToday.add(new Notification("Ưu đãi cuối tuần", "$250", "$500", "1 giờ trước", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", true));
 
         // Dữ liệu giả cho Yesterday
-        listYesterday.add(new Notification("Flash Sale hôm qua", "$100", "$200", "Hôm qua", "https://i.imgur.com/abc123.png", false));
+        listYesterday.add(new Notification("Flash Sale hôm qua", "$100", "$200", "Hôm qua", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", false));
 
         // Khởi tạo adapter
         adapterToday = new NotificationAdapter(getContext(), listToday);
