@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_filter_rounded_container"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Thanh kéo nhỏ trên đầu -->
+        <View
+            android:layout_width="50dp"
+            android:layout_height="5dp"
+            android:background="@drawable/bg_handle"
+            android:layout_gravity="center"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Tiêu đề -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filters"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Gender -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gender"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center">
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btnMen"
+                android:layout_weight="1"
+                android:text="Men" />
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btnWomen"
+                android:layout_weight="1"
+                android:text="Women"
+                android:layout_marginStart="8dp" />
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btnUnisex"
+                android:layout_weight="1"
+                android:text="Unisex"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Size -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Size"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:weightSum="6">
+
+            <Button
+                style="@style/FilterButton"
+                android:layout_margin="2dp"
+                android:id="@+id/btn38"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="38" />
+
+            <Button
+                style="@style/FilterButton"
+                android:layout_margin="2dp"
+                android:id="@+id/btn39"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="39" />
+
+            <Button
+                style="@style/FilterButton"
+                android:layout_margin="2dp"
+                android:id="@+id/btn40"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="40" />
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btn41"
+                android:layout_margin="2dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="41" />
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btn42"
+                android:layout_margin="2dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="42" />
+
+            <Button
+                style="@style/FilterButton"
+                android:id="@+id/btn43"
+                android:layout_margin="2dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="43" />
+        </LinearLayout>
+
+
+        <!-- Price -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp" />
+
+        <SeekBar
+            android:id="@+id/priceSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <TextView
+                android:id="@+id/txtMinPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$16"
+                android:textColor="#777777" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/txtMaxPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$1000"
+                android:textColor="#777777" />
+        </LinearLayout>
+
+        <!-- Apply Button -->
+        <Button
+            android:id="@+id/btnApplyFilter"
+            style="@style/FilterButton"
+            android:layout_width="match_parent"
+            android:text="Apply"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button_selected"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="10dp" />
+    </LinearLayout>
+</ScrollView>

@@ -27,10 +27,15 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
+import com.example.doan.Model.ShoeItem;
+import com.example.doan.NavigationBar.NotificationFragment;
 import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        drawerLayout = findViewById(R.id.main); // DrawerLayout
+        drawerLayout = findViewById(R.id.main);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -70,27 +75,29 @@ public class MainActivity extends AppCompatActivity {
                 .load("https://yourdomain.com/avatar.jpg")
                 .placeholder(R.drawable.avatar_sample)
                 .into(imgAvatar);
+
         LinearLayout signOutLayout = findViewById(R.id.sign_out_container);
         signOutLayout.setOnClickListener(v -> {
             Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show();
-            // TODO: xử lý đăng xuất
         });
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
 
-                if (id == R.id.nav_BestSeller) {
-                    Intent intent = new Intent(MainActivity.this, BestSellerActivity.class);
-                    startActivity(intent);
-                }
+        navigationView.setNavigationItemSelectedListener(item -> {
+            NavController navController = ((NavHostFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.nav_host_fragment)).getNavController();
 
-                DrawerLayout drawerLayout = findViewById(R.id.main);
-                drawerLayout.closeDrawer(GravityCompat.START); // Đóng menu
+            int id = item.getItemId();
 
-                return true;
+            if (id == R.id.nav_BestSeller) {
+                Intent intent = new Intent(MainActivity.this, BestSellerActivity.class);
+                startActivity(intent);
+            } else if (id == R.id.nav_notifications) {
+                navController.navigate(R.id.notificationFragment); // ← mở fragment
             }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
+
 
     }
 
@@ -122,8 +129,16 @@ public class MainActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu); // icon dấu 4 chấm
-            actionBar.setDisplayShowTitleEnabled(false); // ẩn chữ "doan"
+            actionBar.setDisplayShowTitleEnabled(false);
         }
+    }
+
+    private void setupFab() {
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
@@ -147,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            // Mở drawer đúng cách
             drawerLayout.openDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.action_cart) {
@@ -156,15 +170,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-
-    private void setupFab() {
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
-            startActivity(intent);
-        });
     }
 
 

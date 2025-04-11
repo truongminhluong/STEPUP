@@ -73,36 +73,50 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         }
 
         public void bind(Product product) {
-            // Gán dữ liệu cho tên, giá và hình ảnh sản phẩm
-            txtProductName.setText(product.getName());
-            txtProductPrice.setText(product.getPrice());
+            // Nếu là sản phẩm đặc biệt "See All"
+            if ("SEE_ALL".equals(product.getName())) {
+                imgProduct.setImageResource(R.drawable.ic_arrow_right); // icon vector trong drawable
+                txtProductName.setText("See All");
 
-
-            // Hiển thị nhãn "Best Seller" nếu sản phẩm được đánh dấu
-            if (product.isBestSeller()) {
-                txtBestSeller.setVisibility(View.VISIBLE);
-            } else {
                 txtBestSeller.setVisibility(View.GONE);
-            }
+                txtProductPrice.setVisibility(View.GONE);
+                btnAddToCart.setVisibility(View.GONE);
 
-            // Thiết lập sự kiện click cho toàn bộ item để chuyển sang màn hình chi tiết
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(listener != null) {
+                imgProduct.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                txtProductName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
+                // Bắt sự kiện khi ấn vào "See All"
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onProductClick(product); // mở SeeAllActivity
+                    }
+                });
+            } else {
+                // Sản phẩm bình thường
+                imgProduct.setImageResource(product.getImageResId());
+                txtProductName.setText(product.getName());
+                txtProductPrice.setText(product.getPrice());
+
+                txtBestSeller.setVisibility(product.isBestSeller() ? View.VISIBLE : View.GONE);
+                txtProductPrice.setVisibility(View.VISIBLE);
+                btnAddToCart.setVisibility(View.VISIBLE);
+
+                imgProduct.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                txtProductName.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+
+                // Sự kiện click cho sản phẩm
+                itemView.setOnClickListener(v -> {
+                    if (listener != null) {
                         listener.onProductClick(product);
                     }
-                }
-            });
+                });
 
-            // Sự kiện click cho nút "Add to Cart" (nếu cần)
-            btnAddToCart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+                // Click nút thêm vào giỏ
+                btnAddToCart.setOnClickListener(v -> {
                     Toast.makeText(v.getContext(), "Added " + product.getName() + " to cart", Toast.LENGTH_SHORT).show();
-                    // TODO: Xử lý thêm sản phẩm vào giỏ hàng
-                }
-            });
+                });
+            }
         }
+
     }
 }

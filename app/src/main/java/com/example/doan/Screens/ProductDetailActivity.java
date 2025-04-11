@@ -54,6 +54,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
     // Ánh xạ các view
@@ -79,11 +80,12 @@ public class ProductDetailActivity extends AppCompatActivity {
     private  void loadProductData() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("product")) {
-            product = (Product) intent.getSerializableExtra("product");
+            Product product = (Product) getIntent().getSerializableExtra("product");
+
             if (product != null) {
                 tvProductDetailName.setText(product.getName());
                 tvProductDetailPrice.setText(product.getPrice());
-                ivProductDetailImage.setImageResource(product.getImage());
+                ivProductDetailImage.setImageResource(product.getImageResId());
                 tvProductDetailDescription.setText("Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....");  // Mô tả từ dữ liệu
             }
         }

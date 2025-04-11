@@ -48,11 +48,16 @@
         android:theme="@style/Theme.Doan"
         tools:targetApi="31">
         <activity
+            android:name=".PopularShoesSeeAllActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SeeAllShoesActivity"
+            android:exported="false" />
+        <activity
             android:name=".BestSellerActivity"
             android:exported="true"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
-            android:windowSoftInputMode="adjustPan"/>
-        <!-- Activity chính duy nhất có MAIN/LAUNCHER -->
+            android:windowSoftInputMode="adjustPan" /> <!-- Activity chính duy nhất có MAIN/LAUNCHER -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -83,8 +88,6 @@
             android:exported="true"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
-
-
     </application>
 
 </manifest>
