@@ -1,5 +1,6 @@
 package com.example.doan.Adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,10 +21,16 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
 
     private List<Favorite> favorites;
     private Context context;
+    private OnItemClickListener listener;
 
-    public FavoriteAdapter(List<Favorite> favorites, Context context) {
+    public interface OnItemClickListener {
+        void onItemClick(Favorite favorite);
+    }
+
+    public FavoriteAdapter(List<Favorite> favorites, Context context, OnItemClickListener listener) {
         this.favorites = favorites;
         this.context = context;
+        this.listener = listener;
     }
 
     @NonNull
@@ -40,20 +47,31 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         holder.tvPrice.setText(item.getPrice());
         holder.tvTag.setText(item.getTag());
 
-        // Load ảnh từ URL bằng Glide
         Glide.with(context)
                 .load(item.getImageUrl())
                 .placeholder(R.drawable.ic_placeholder)
                 .into(holder.ivProduct);
 
-        // Set trái tim
         holder.ivFavorite.setImageResource(item.isFavorite() ? R.drawable.ic_heart_filled_red : R.drawable.ic_heart_outline);
 
-        // Toggle trái tim
+        // Xử lý click trái tim để xóa khỏi danh sách
         holder.ivFavorite.setOnClickListener(v -> {
-            item.setFavorite(!item.isFavorite());
-            notifyItemChanged(position);
+            if (item.isFavorite()) {
+                int pos = holder.getAdapterPosition();
+                new AlertDialog.Builder(context)
+                        .setTitle("Xác nhận")
+                        .setMessage("Bạn có muốn xoá sản phẩm này khỏi danh sách yêu thích?")
+                        .setPositiveButton("Có", (dialog, which) -> {
+                            favorites.remove(pos);
+                            notifyItemRemoved(pos);
+                        })
+                        .setNegativeButton("Không", null)
+                        .show();
+            }
         });
+
+        // Click item -> mở chi tiết
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
     @Override
@@ -75,4 +93,3 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         }
     }
 }
-
