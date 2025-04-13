@@ -50,9 +50,13 @@ public class ProductDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+                intent.putExtra("product_name", product.getName());
+                intent.putExtra("product_price", product.getPrice());
+                intent.putExtra("product_image", product.getImageResId());
                 startActivity(intent);
             }
         });
+
 
 
     }
@@ -80,7 +84,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private  void loadProductData() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("product")) {
-            Product product = (Product) getIntent().getSerializableExtra("product");
+            product = (Product) getIntent().getSerializableExtra("product");
 
             if (product != null) {
                 tvProductDetailName.setText(product.getName());
@@ -113,6 +117,11 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     // Mở màn hình giỏ hàng
     private void openCartScreen() {
-        Toast.makeText(this, "Cart", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+        intent.putExtra("product_name", product.getName());
+        intent.putExtra("product_price", product.getPrice());
+        intent.putExtra("product_image", product.getImageResId());
+        startActivity(intent);
+        Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 }

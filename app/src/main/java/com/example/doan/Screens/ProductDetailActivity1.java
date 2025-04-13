@@ -32,24 +32,36 @@ public class ProductDetailActivity1 extends AppCompatActivity {
         initViews();
         setupToolbar();
         loadProductData();
-
-        // Xử lý nút Add to Cart
-        btnAddToCart.setOnClickListener(view -> {
-            Intent intent = new Intent(ProductDetailActivity1.this, MyCartActivity.class);
-            startActivity(intent);
-        });
-
         imgProduct = findViewById(R.id.imgProduct);
         txtName = findViewById(R.id.txtProductName);
         txtPrice = findViewById(R.id.txtProductPrice);
 
-        ProductNewArrivals product = (ProductNewArrivals) getIntent().getSerializableExtra("productNewArrivals");
+        ProductNewArrivals productNewArrivals = (ProductNewArrivals) getIntent().getSerializableExtra("productNewArrivals");
 
-        if (product != null) {
-            imgProduct.setImageResource(product.getImage());
-            txtName.setText(product.getName());
-            txtPrice.setText(product.getPrice());
+        if (productNewArrivals != null) {
+            imgProduct.setImageResource(productNewArrivals.getImage());
+            txtName.setText(productNewArrivals.getName());
+            txtPrice.setText(productNewArrivals.getPrice());
         }
+        // Xử lý nút Add to Cart
+        btnAddToCart.setOnClickListener(view -> {
+            Intent intent = new Intent(ProductDetailActivity1.this, MyCartActivity.class);
+
+            // Lấy thông tin trực tiếp từ view hiển thị
+            String name = txtName.getText().toString();
+            String price = txtPrice.getText().toString();
+            int image = R.drawable.img_7; // hoặc bạn thay bằng productNewArrivals.getImage() nếu cần chính xác hơn
+
+            intent.putExtra("product_name", name);
+            intent.putExtra("product_price", price);
+            intent.putExtra("product_image", image);
+
+            startActivity(intent);
+        });
+
+
+
+
     }
 
     // Ánh xạ view
@@ -112,6 +124,9 @@ public class ProductDetailActivity1 extends AppCompatActivity {
     private void openCartScreen() {
         Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(ProductDetailActivity1.this, MyCartActivity.class);
-        startActivity(intent);
-    }
+            intent.putExtra("product_name", txtName.getText().toString());
+            intent.putExtra("product_price", txtPrice.getText().toString());
+            intent.putExtra("product_image", R.drawable.img_7); // hoặc ảnh thực tế
+            startActivity(intent);
+        }
 }

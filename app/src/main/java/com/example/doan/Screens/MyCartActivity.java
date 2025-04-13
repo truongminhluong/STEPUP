@@ -1,5 +1,6 @@
 package com.example.doan.Screens;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -66,12 +67,20 @@ public class MyCartActivity extends AppCompatActivity {
     }
 
     private void loadCartData() {
-        // Tạo danh sách sản phẩm trong giỏ hàng
-        cartItemList.add(new CartItem("1", "Nike Air Max", 456, R.drawable.img_7, 1));
-        cartItemList.add(new CartItem("2", "Adidas Boost", 333, R.drawable.img_7, 1));
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("product_name")) {
+            String name = intent.getStringExtra("product_name");
+            String priceStr = intent.getStringExtra("product_price"); // ✅ giữ nguyên chuỗi
+            int imageRes = intent.getIntExtra("product_image", R.drawable.img_1);
 
-        // Khởi tạo adapter và gán vào RecyclerView
+            // ✅ Thêm CartItem với giá là String, giữ nguyên định dạng
+            cartItemList.add(new CartItem("0", name, priceStr, imageRes, 1));
+        }
+
         myCartAdapter = new MyCartAdapter(cartItemList);
         recyclerViewMyCart.setAdapter(myCartAdapter);
     }
+
+
+
 }
