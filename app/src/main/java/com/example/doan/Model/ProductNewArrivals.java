@@ -1,6 +1,8 @@
 package com.example.doan.Model;
 
-public class ProductNewArrivals {
+import java.io.Serializable;
+
+public class ProductNewArrivals implements Serializable {
     private int id;
     private String name;
     private  String price;

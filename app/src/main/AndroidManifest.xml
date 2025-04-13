@@ -47,7 +47,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Doan"
         tools:targetApi="31">
+        <activity android:name=".Screens.ProductDetailActivity1"
+            android:theme="@style/AppTheme"
+            android:exported="false">
+        </activity>
 
+        <activity
+            android:name=".AllShoesByCategoryActivity"
+            android:exported="false" />
         <activity
             android:name=".SeeAllShoesActivity"
             android:exported="false" />
@@ -81,6 +88,7 @@
             android:name=".Screens.ProductDetailActivity"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
+
         <activity
             android:name=".Screens.MyCartActivity"
             android:exported="true"

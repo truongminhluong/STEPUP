@@ -3,6 +3,7 @@ package com.example.doan.NavigationBar;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Adapter.CategoryAdapter;
 import com.example.doan.Adapter.ProductAdapter;
 import com.example.doan.Adapter.ProductNewArrivalsAdapter;
+import com.example.doan.AllShoesByCategoryActivity;
 import com.example.doan.Data.DataHolder;
 import com.example.doan.Model.Category;
 import com.example.doan.Model.Product;
@@ -26,6 +28,7 @@ import com.example.doan.Model.ProductNewArrivals;
 import com.example.doan.Model.ShoeItem;
 import com.example.doan.R;
 import com.example.doan.Screens.ProductDetailActivity;
+import com.example.doan.Screens.ProductDetailActivity1;
 import com.example.doan.SeeAllShoesActivity;
 
 import java.util.ArrayList;
@@ -41,6 +44,11 @@ public class HomeFragment extends Fragment {
     private Category currentCategory;
     private List<Category> categoryList;
     private List<ProductNewArrivals> productNewArrivalsList;
+
+    private int currentIndex = 0;
+    private Handler autoScrollHandler;
+    private Runnable autoScrollRunnable;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,6 +80,17 @@ public class HomeFragment extends Fragment {
             intent.putExtra("category", selectedCategory);
             startActivity(intent);
         });
+
+        TextView txtSeeAll1 = view.findViewById(R.id.txtSeeAll1);
+        txtSeeAll1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), AllShoesByCategoryActivity.class);
+                intent.putExtra("category", "new_arrivals"); // gán category đặc biệt cho New Arrivals
+                startActivity(intent);
+            }
+        });
+
     }
 
     private void setupCategory(View view) {
@@ -108,16 +127,59 @@ public class HomeFragment extends Fragment {
     }
 
 
+
     private void setupProductNewArrivals(View view) {
         recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
-        recyclerViewProductNewArrivals.setLayoutManager(new GridLayoutManager(getContext(), 1));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        recyclerViewProductNewArrivals.setLayoutManager(layoutManager);
 
         productNewArrivalsList = new ArrayList<>();
         productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true));
+        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true));
+        productNewArrivalsList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true));
+        productNewArrivalsList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true));
+        productNewArrivalsList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true));
+        productNewArrivalsList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true));
+        productNewArrivalsList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true));
 
-        productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList);
+        productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList, product -> {
+            Intent intent = new Intent(getContext(), ProductDetailActivity1.class);
+            intent.putExtra("product_name", product.getName());
+            intent.putExtra("product_price", product.getPrice());
+            intent.putExtra("product_image", product.getImage());
+            startActivity(intent);
+        });
         recyclerViewProductNewArrivals.setAdapter(productNewArrivalsAdapter);
+
+
+        // Tự động scroll
+        autoScrollHandler = new Handler();
+        autoScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (currentIndex >= productNewArrivalsList.size()) {
+                    currentIndex = 0; // Quay lại đầu danh sách
+                }
+                recyclerViewProductNewArrivals.smoothScrollToPosition(currentIndex);
+                currentIndex++;
+
+                // Chờ 15 giây rồi tiếp tục
+                autoScrollHandler.postDelayed(this, 7000);
+            }
+        };
+
+        // Bắt đầu auto scroll
+        autoScrollHandler.postDelayed(autoScrollRunnable, 7000);
     }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (autoScrollHandler != null && autoScrollRunnable != null) {
+            autoScrollHandler.removeCallbacks(autoScrollRunnable);
+        }
+    }
+
+
 
     private void navigateToProductDetail(Product product) {
         Intent intent = new Intent(getContext(), ProductDetailActivity.class);
