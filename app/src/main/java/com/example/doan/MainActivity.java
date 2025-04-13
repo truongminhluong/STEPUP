@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+            Toast.makeText(this, "MyCart", Toast.LENGTH_SHORT).show();
             startActivity(intent);
         });
     }
