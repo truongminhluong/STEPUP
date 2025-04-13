@@ -9,5 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="selected_bg">#5B9EE1</color>
     <color name="default_bg">#FFFFFF</color>
-
+    <color name="red">#F00000</color>
 </resources>

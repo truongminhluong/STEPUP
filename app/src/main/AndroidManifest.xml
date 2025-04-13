@@ -47,9 +47,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Doan"
         tools:targetApi="31">
-        <activity
-            android:name=".PopularShoesSeeAllActivity"
-            android:exported="false" />
+
         <activity
             android:name=".SeeAllShoesActivity"
             android:exported="false" />

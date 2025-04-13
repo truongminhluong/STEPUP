@@ -27,20 +27,16 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
-import com.example.doan.Model.ShoeItem;
-import com.example.doan.NavigationBar.NotificationFragment;
 import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
     private DrawerLayout drawerLayout;
+    private BottomNavigationView bottomNavigationView;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -50,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         drawerLayout = findViewById(R.id.main);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -88,17 +85,23 @@ public class MainActivity extends AppCompatActivity {
             int id = item.getItemId();
 
             if (id == R.id.nav_BestSeller) {
+                Toast.makeText(this, "Best Seller", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, BestSellerActivity.class);
                 startActivity(intent);
+            } else if (id == R.id.nav_home) {
+                Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+                bottomNavigationView.setSelectedItemId(R.id.homeFragment); // Fix quan trọng
             } else if (id == R.id.nav_notifications) {
-                navController.navigate(R.id.notificationFragment); // ← mở fragment
+                Toast.makeText(this, "Notification", Toast.LENGTH_SHORT).show();
+                bottomNavigationView.setSelectedItemId(R.id.notificationFragment);
+            } else if (id == R.id.nav_profile) {
+                Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
+                bottomNavigationView.setSelectedItemId(R.id.profileFragment);
             }
 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
-
-
     }
 
     private void hideSystemUI() {
@@ -114,12 +117,37 @@ public class MainActivity extends AppCompatActivity {
 
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
-            BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
+
+            bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                String message = "";
+
+                if (itemId == R.id.homeFragment) {
+                    message = "Home clicked";
+                }else if (itemId == R.id.favoriteFragment) {
+                    message = "Favorite clicked";
+                }else if (itemId == R.id.notificationFragment) {
+                    message = "Notifications clicked";
+                } else if (itemId == R.id.profileFragment) {
+                    message = "Profile clicked";
+                }
+//                else if (itemId == R.id.cartFragment) {
+//                    message = "Cart clicked";
+//                }
+
+                if (!message.isEmpty()) {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+
+                // Vẫn điều hướng như mặc định
+                return NavigationUI.onNavDestinationSelected(item, navController);
+            });
         } else {
             throw new IllegalStateException("NavHostFragment not found. Check your XML layout.");
         }
     }
+
 
     private void setupActionBar() {
         Toolbar toolbar = findViewById(R.id.tool_bar);
@@ -171,6 +199,4 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }

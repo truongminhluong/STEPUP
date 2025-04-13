@@ -130,12 +130,16 @@ public class HomeFragment extends Fragment {
 
         if (category.getName().equalsIgnoreCase("Nike")) {
             filteredProducts.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
-            filteredProducts.add(new Product(2, "Nike Revolution", "$120", R.drawable.ic_nike, true));
+            filteredProducts.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_7, true));
             filteredProducts.add(new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
-            filteredProducts.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img_2, true));
-            filteredProducts.add(new Product(5, "Nike Blazer Mid", "$180.00", R.drawable.img_2, true));
+            filteredProducts.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img, true));
+            filteredProducts.add(new Product(5, "Nike Blazer Mid", "$180.00", R.drawable.img_7, true));
         } else if (category.getName().equalsIgnoreCase("Puma")) {
             filteredProducts.add(new Product(6, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+            filteredProducts.add(new Product(10, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+            filteredProducts.add(new Product(11, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+            filteredProducts.add(new Product(12, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+            filteredProducts.add(new Product(13, "Puma RS-X", "$130", R.drawable.ic_puma, true));
         } else if (category.getName().equalsIgnoreCase("Under Armour")) {
             filteredProducts.add(new Product(7, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
         } else if (category.getName().equalsIgnoreCase("Adidas")) {
@@ -163,7 +167,7 @@ public class HomeFragment extends Fragment {
 
         // Lấy top 4
         List<Product> top4 = new ArrayList<>();
-        for (int i = 0; i < Math.min(4, filteredProducts.size()); i++) {
+        for (int i = 0; i < Math.min(3, filteredProducts.size()); i++) {
             Product p = filteredProducts.get(i);
             if (p.isBestSeller()) top4.add(p);
         }
@@ -179,6 +183,7 @@ public class HomeFragment extends Fragment {
                 navigateToProductDetail(product);
             }
         });
+        DataHolder.allShoes = getAllBestSellerShoes();
 
         recyclerViewPopularShoes.setAdapter(popularAdapter);
     }
@@ -192,11 +197,16 @@ public class HomeFragment extends Fragment {
             List<Product> temp = new ArrayList<>();
             if (cat.getName().equalsIgnoreCase("Nike")) {
                 temp.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
-                temp.add(new Product(2, "Nike Revolution", "$120", R.drawable.ic_nike, true));
+                temp.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_1, true));
                 temp.add(new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
-                temp.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img_2, true));
+                temp.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img_7, true));
+                temp.add(new Product(10, "Nike Jordan", "$493.00", R.drawable.img, true));
+                temp.add(new Product(9, "Nike Revolution", "$120", R.drawable.img_1, true));
+                temp.add(new Product(8, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
+                temp.add(new Product(7, "Nike Air Force 1", "$130.00", R.drawable.img_7, true));
             } else if (cat.getName().equalsIgnoreCase("Puma")) {
                 temp.add(new Product(5, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+                temp.add(new Product(11, "Puma RS-X", "$130", R.drawable.ic_puma, true));
             } else if (cat.getName().equalsIgnoreCase("Under Armour")) {
                 temp.add(new Product(6, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
             } else if (cat.getName().equalsIgnoreCase("Adidas")) {

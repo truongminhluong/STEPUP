@@ -19,6 +19,7 @@
 
             <!-- 🔍 Search -->
             <EditText
+                android:layout_marginTop="50dp"
                 android:id="@+id/searchEdt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -68,6 +69,7 @@
             <!-- 🆕 New Arrivals List -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewProductNewArrivals"
+                android:layout_marginTop="15dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="160dp"

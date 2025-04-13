@@ -103,9 +103,9 @@ public class BestSellerActivity extends AppCompatActivity {
         List<Button> sizeButtons = Arrays.asList(btn38, btn39, btn40, btn41, btn42, btn43);
 
         View.OnClickListener sizeClickListener = v -> {
-            for (Button b : sizeButtons) {
-                b.setBackgroundResource(R.drawable.bg_button_unselected);
-                b.setTextColor(Color.BLACK);
+            for (Button button : sizeButtons) {
+                button.setBackgroundResource(R.drawable.bg_button_unselected);
+                button.setTextColor(Color.BLACK);
             }
             v.setBackgroundResource(R.drawable.bg_button_selected);
             ((Button) v).setTextColor(Color.WHITE);
@@ -114,7 +114,7 @@ public class BestSellerActivity extends AppCompatActivity {
         for (Button b : sizeButtons) {
             b.setOnClickListener(sizeClickListener);
         }
-
+//apply
         Button btnApply = sheetView.findViewById(R.id.btnApplyFilter);
         btnApply.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
