@@ -42,12 +42,19 @@
                 android:src="@drawable/img_1"
                 android:layout_marginBottom="16dp"
                 android:scaleType="centerCrop" />
-
+            <TextView
+                android:id="@+id/txtPDBestChoice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Best Choice"
+                android:textColor="#5B9EE1"
+                android:textSize="16dp" />
             <!-- Tên sản phẩm -->
             <TextView
                 android:id="@+id/txtProductName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:text="Nike Jordan"
                 android:textSize="24sp"
                 android:textStyle="bold"

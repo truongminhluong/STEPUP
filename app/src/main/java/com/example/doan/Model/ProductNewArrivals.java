@@ -5,17 +5,24 @@ import java.io.Serializable;
 public class ProductNewArrivals implements Serializable {
     private int id;
     private String name;
-    private  String price;
-    private int image;
-    private  boolean bestChoice;
+    private String price;
+    private int imageResource;
+    private boolean isNew;
+    private boolean bestChoice;  // Thêm thuộc tính này
 
-    public ProductNewArrivals(int id, String name, String price, int image, boolean bestChoice) {
+    public ProductNewArrivals(int id, String name, String price, int imageResource, boolean isNew, boolean bestChoice) {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.image = image;
-        this.bestChoice = bestChoice;
+        this.imageResource = imageResource;
+        this.isNew = isNew;
+        this.bestChoice = bestChoice;  // Khởi tạo bestChoice
     }
+
+    // Getter và Setter
+    public boolean isBestChoice() { return bestChoice; }
+    public void setBestChoice(boolean bestChoice) { this.bestChoice = bestChoice; }
+    // Các getter còn lại...
 
     public int getId() {
         return id;
@@ -41,19 +48,20 @@ public class ProductNewArrivals implements Serializable {
         this.price = price;
     }
 
-    public int getImage() {
-        return image;
+    public int getImageResource() {
+        return imageResource;
     }
 
-    public void setImage(int image) {
-        this.image = image;
+    public void setImageResource(int imageResource) {
+        this.imageResource = imageResource;
     }
 
-    public boolean isBestChoice() {
-        return bestChoice;
+    public boolean isNew() {
+        return isNew;
     }
 
-    public void setBestChoice(boolean bestChoice) {
-        this.bestChoice = bestChoice;
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 }
+

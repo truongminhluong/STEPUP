@@ -134,19 +134,19 @@ public class HomeFragment extends Fragment {
         recyclerViewProductNewArrivals.setLayoutManager(layoutManager);
 
         productNewArrivalsList = new ArrayList<>();
-        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productNewArrivalsList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productNewArrivalsList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productNewArrivalsList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productNewArrivalsList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productNewArrivalsList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true));
+        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true,true));
+        productNewArrivalsList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true,true));
 
         productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList, product -> {
             Intent intent = new Intent(getContext(), ProductDetailActivity1.class);
             intent.putExtra("product_name", product.getName());
             intent.putExtra("product_price", product.getPrice());
-            intent.putExtra("product_image", product.getImage());
+            intent.putExtra("product_image", product.getImageResource());
             startActivity(intent);
         });
         recyclerViewProductNewArrivals.setAdapter(productNewArrivalsAdapter);

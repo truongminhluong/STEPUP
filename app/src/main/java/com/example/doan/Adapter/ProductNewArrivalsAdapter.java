@@ -61,7 +61,7 @@ public class ProductNewArrivalsAdapter extends RecyclerView.Adapter<ProductNewAr
         public void bind(ProductNewArrivals product, OnItemClickListener listener) {
             txtProductNewName.setText(product.getName());
             txtProductNewPrice.setText(product.getPrice());
-            imgProductNew.setImageResource(product.getImage());
+            imgProductNew.setImageResource(product.getImageResource());
 
             txtBestChoice.setVisibility(product.isBestChoice() ? View.VISIBLE : View.GONE);
 

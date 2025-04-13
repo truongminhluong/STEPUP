@@ -55,14 +55,15 @@ public class AllShoesByCategoryActivity extends AppCompatActivity {
 
     private List<ProductNewArrivals> getNewArrivals() {
         List<ProductNewArrivals> productList = new ArrayList<>();
-        productList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true));
-        productList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true));
-        productList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true));
+        productList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true, true));  // Best Choice
+        productList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true, true));  // Không phải Best Choice
+        productList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true, true));
+        productList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true, true));
+        productList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true, false));  // Best Choice
+        productList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true, false));
+        productList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true, false));
 
         return productList;
     }
+
 }
