@@ -65,17 +65,21 @@ public class ProductDetailActivity1 extends AppCompatActivity {
             ProductNewArrivals productNewArrivals = (ProductNewArrivals) intent.getSerializableExtra("productNewArrivals");
 
             if (productNewArrivals != null) {
-                imgProduct.setImageResource(productNewArrivals.getImageResource());
+                // Hiển thị thông tin sản phẩm
                 txtName.setText(productNewArrivals.getName());
                 txtPrice.setText(productNewArrivals.getPrice());
-                txtDescription.setText("Air Jordan is an American brand of basketball shoes, athletic, casual, and style clothing produced by Nike...");
+                txtDescription.setText(productNewArrivals.getDescription());
+                imgProduct.setImageResource(productNewArrivals.getImageResource());
+                txtPDBestChoice.setText(productNewArrivals.isBestChoice() ? "Best Choice" : "");
 
-                // Kiểm tra nếu là Best Choice, hiển thị txtPDBestChoice
-                if (productNewArrivals.isBestChoice()) {
-                    txtPDBestChoice.setVisibility(View.VISIBLE);  // Hiển thị Best Choice
-                } else {
-                    txtPDBestChoice.setVisibility(View.GONE);  // Ẩn Best Choice nếu không phải
-                }
+                // Xử lý sự kiện click nút thêm vào giỏ hàng
+                btnAddToCart.setOnClickListener(v -> {
+                    Intent cartIntent = new Intent(ProductDetailActivity1.this, MyCartActivity.class);
+                    cartIntent.putExtra("product_name", productNewArrivals.getName());
+                    cartIntent.putExtra("product_price", productNewArrivals.getPrice());
+                    cartIntent.putExtra("product_image", productNewArrivals.getImageResource());
+                    startActivity(cartIntent);
+                });
             }
         }
     }
@@ -110,4 +114,3 @@ public class ProductDetailActivity1 extends AppCompatActivity {
         startActivity(intent);
     }
 }
-

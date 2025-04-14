@@ -9,21 +9,20 @@ public class ProductNewArrivals implements Serializable {
     private int imageResource;
     private boolean isNew;
     private boolean bestChoice;  // Thêm thuộc tính này
+    private String description;  // Thêm thuộc tính description
 
-    public ProductNewArrivals(int id, String name, String price, int imageResource, boolean isNew, boolean bestChoice) {
+    // Constructor
+    public ProductNewArrivals(int id, String name, String price, int imageResource, boolean isNew, boolean bestChoice, String description) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.imageResource = imageResource;
         this.isNew = isNew;
-        this.bestChoice = bestChoice;  // Khởi tạo bestChoice
+        this.bestChoice = bestChoice;
+        this.description = description;  // Khởi tạo description
     }
 
-    // Getter và Setter
-    public boolean isBestChoice() { return bestChoice; }
-    public void setBestChoice(boolean bestChoice) { this.bestChoice = bestChoice; }
-    // Các getter còn lại...
-
+    // Getter và Setter cho các thuộc tính
     public int getId() {
         return id;
     }
@@ -63,5 +62,21 @@ public class ProductNewArrivals implements Serializable {
     public void setNew(boolean aNew) {
         isNew = aNew;
     }
-}
 
+    public boolean isBestChoice() {
+        return bestChoice;
+    }
+
+    public void setBestChoice(boolean bestChoice) {
+        this.bestChoice = bestChoice;
+    }
+
+    // Getter và Setter cho description
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+}
