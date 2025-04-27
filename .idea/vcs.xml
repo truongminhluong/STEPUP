@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
+<<<<<<< HEAD
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+=======
+>>>>>>> ae7a74fb3c2459574552a779990b204d976ede47
     <mapping directory="$PROJECT_DIR$/STEPUP" vcs="Git" />
   </component>
 </project>
