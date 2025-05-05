@@ -41,10 +41,8 @@ public class SearchActivity extends AppCompatActivity {
         tvCancel = findViewById(R.id.tvCancel);
         btnBack = findViewById(R.id.btnBack);
 
-        // ✅ Clear focus để tránh bật bàn phím ngay khi vào
-        etSearch.clearFocus();
+        etSearch.clearFocus(); // Không tự bật bàn phím khi vào
 
-        // ✅ Danh sách dữ liệu mẫu
         allItems = Arrays.asList(
                 "Nike Air Max Shoes",
                 "Nike Jordan Shoes",
@@ -54,28 +52,24 @@ public class SearchActivity extends AppCompatActivity {
                 "Regular Shoes"
         );
 
-        // ✅ Khởi tạo danh sách lọc
         filteredItems = new ArrayList<>(allItems);
 
-        // ✅ Thiết lập RecyclerView
-        adapter = new SearchAdapter(filteredItems);
+        // ✅ TRUYỀN CONTEXT CHO ADAPTER
+        adapter = new SearchAdapter(this, filteredItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // ✅ Nút quay lại
         btnBack.setOnClickListener(v -> {
             hideKeyboard();
             finish();
         });
 
-        // ✅ Nút Cancel
         tvCancel.setOnClickListener(v -> {
             etSearch.setText("");
             hideKeyboard();
             Toast.makeText(this, "Search cleared", Toast.LENGTH_SHORT).show();
         });
 
-        // ✅ Bắt sự kiện tìm kiếm
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -108,7 +102,9 @@ public class SearchActivity extends AppCompatActivity {
         View view = this.getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 }

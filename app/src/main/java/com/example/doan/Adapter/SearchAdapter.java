@@ -18,11 +18,12 @@ import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
 
-    private Context context;
+    private final Context context;
     private final List<String> originalList;
     private final List<String> filteredList;
 
-    public SearchAdapter(List<String> searchList) {
+    // ✅ Constructor truyền đúng context
+    public SearchAdapter(Context context, List<String> searchList) {
         this.context = context;
         this.originalList = new ArrayList<>(searchList);
         this.filteredList = new ArrayList<>(searchList);
@@ -39,7 +40,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
         String item = filteredList.get(position);
         holder.tvText.setText(item);
-        holder.ivIcon.setImageResource(R.drawable.ic_history); // icon lịch sử tìm kiếm
+        holder.ivIcon.setImageResource(R.drawable.ic_history);
 
         holder.itemView.setOnClickListener(v ->
                 Toast.makeText(context, "Clicked: " + item, Toast.LENGTH_SHORT).show()
@@ -51,7 +52,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         return filteredList.size();
     }
 
-    // Thêm hàm lọc nếu cần tìm kiếm
     public void filter(String query) {
         filteredList.clear();
         if (query.isEmpty()) {
