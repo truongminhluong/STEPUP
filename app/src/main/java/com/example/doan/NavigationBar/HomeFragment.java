@@ -142,7 +142,7 @@ public class HomeFragment extends Fragment {
     private void setupProducts(View view) {
         recyclerViewProducts = view.findViewById(R.id.recyclerViewProduct);
         recyclerViewProducts.setHasFixedSize(true);
-        recyclerViewProducts.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        recyclerViewProducts.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
     }
 
     private void loadProductsForCategory(Category category) {

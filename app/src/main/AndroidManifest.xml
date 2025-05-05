@@ -23,9 +23,6 @@
             android:value="AIzaSyBKSIF64u1FBEjpI0HxVSvc3BvYChbe0nE" />
 
 
-
-
-
         <activity
             android:name=".Auth.SignInActivity"
             android:exported="true"

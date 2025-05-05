@@ -24,7 +24,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doan.Adapter.ProductVariantColorAdapter;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductVariant;
 import com.example.doan.R;
@@ -50,6 +53,10 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageView[] colorImageViews;
     private int selectedColorIndex = -1;
 
+    private RecyclerView recyclerViewVariantColor;
+    private ProductVariantColorAdapter productVariantColorAdapter;
+    private List<ProductVariant> productVariantColorList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +70,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         initViews();
+        setupProductVariantColor();
         setupToolbar();
         loadProductData();
         setListeners();
@@ -80,6 +88,16 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvProductDetailValue = findViewById(R.id.tvPDValue);
         btnAddToCart = findViewById(R.id.btnAddToCart);
         ivProductDetailColor1 = findViewById(R.id.imageColor1);
+        recyclerViewVariantColor = findViewById(R.id.recyclerViewVariantColor);
+
+    }
+
+    private void setupProductVariantColor(){
+        productVariantColorList = new ArrayList<>(); // Khởi tạo danh sách trống
+        productVariantColorAdapter = new ProductVariantColorAdapter(productVariantColorList);
+        recyclerViewVariantColor.setHasFixedSize(true);
+        recyclerViewVariantColor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewVariantColor.setAdapter(productVariantColorAdapter);
 
     }
 
@@ -205,20 +223,16 @@ public class ProductDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        List<ProductVariant> variants = new ArrayList<>();
+                        productVariantColorList.clear();
+
                         for (QueryDocumentSnapshot doc : task.getResult()) {
                             ProductVariant variant = doc.toObject(ProductVariant.class);
-                            variants.add(variant);
-                            Log.d("Error", "product_id " + variant.getImage_url());
-
-                            Bitmap bitmap = decodeBase64ToBitmap(variant.getImage_url(), this);
-                            if (bitmap != null) {
-                                ivProductDetailColor2.setImageBitmap(bitmap);
-//                                ivProductDetailColor3.setImageBitmap(bitmap);
-                            }
+                            productVariantColorList.add(variant);
+                            Log.i("AG", "loadProductVariants: " + variant.getImage_url());
                         }
 
-                        // TODO: Hiển thị danh sách biến thể lên UI nếu cần
+                        productVariantColorAdapter.notifyDataSetChanged();
+
                     } else {
                         Log.e("FirestoreVariant", "Lỗi khi lấy biến thể", task.getException());
                     }
