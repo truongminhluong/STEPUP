@@ -43,7 +43,6 @@ public class MyCartActivity extends AppCompatActivity {
         loadCartData();
     }
 
-
     private void initViews() {
         mycartToolbar = findViewById(R.id.mycartToolbar);
         recyclerViewMyCart = findViewById(R.id.recyclerViewMyCart);
@@ -54,8 +53,7 @@ public class MyCartActivity extends AppCompatActivity {
         setSupportActionBar(mycartToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
-            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
+            actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle("My Cart");
         }
     }
@@ -63,24 +61,22 @@ public class MyCartActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         finish();
-        return super.onSupportNavigateUp();
+        return true;
     }
 
     private void loadCartData() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("product_name")) {
             String name = intent.getStringExtra("product_name");
-            String priceStr = intent.getStringExtra("product_price"); // ✅ giữ nguyên chuỗi
+            String priceStr = intent.getStringExtra("product_price");
             int imageRes = intent.getIntExtra("product_image", R.drawable.img_1);
 
-            // ✅ Thêm CartItem với giá là String, giữ nguyên định dạng
+            // Thêm sản phẩm vào danh sách giỏ hàng
             cartItemList.add(new CartItem("0", name, priceStr, imageRes, 1));
         }
 
+        // Khởi tạo adapter và gán cho RecyclerView
         myCartAdapter = new MyCartAdapter(cartItemList);
         recyclerViewMyCart.setAdapter(myCartAdapter);
     }
-
-
-
 }

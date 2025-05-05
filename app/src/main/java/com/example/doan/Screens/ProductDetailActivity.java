@@ -28,14 +28,15 @@ public class ProductDetailActivity extends AppCompatActivity {
     private ImageView ivProductDetailImage;
     private TextView tvProductDetailName, tvProductDetailPrice, tvProductDetailDescription;
     private Button btnAddToCart;
-    private Product product;
 
+    private Product product = null; // Có thể null nếu vào từ tìm kiếm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_product_detail);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -46,22 +47,23 @@ public class ProductDetailActivity extends AppCompatActivity {
         setupToolbar();
         loadProductData();
 
-        btnAddToCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+        btnAddToCart.setOnClickListener(view -> {
+            Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+
+            if (product != null) {
                 intent.putExtra("product_name", product.getName());
                 intent.putExtra("product_price", product.getPrice());
                 intent.putExtra("product_image", product.getImageResId());
-                startActivity(intent);
+            } else {
+                intent.putExtra("product_name", tvProductDetailName.getText().toString());
+                intent.putExtra("product_price", tvProductDetailPrice.getText().toString());
+                intent.putExtra("product_image", R.drawable.img); // ảnh mặc định
             }
+
+            startActivity(intent);
         });
-
-
-
     }
 
-    // Ánh xạ các view
     private void initViews() {
         detailToolbar = findViewById(R.id.detailToolbar);
         ivProductDetailImage = findViewById(R.id.ivPDImage);
@@ -75,34 +77,46 @@ public class ProductDetailActivity extends AppCompatActivity {
         setSupportActionBar(detailToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
-            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
             actionBar.setTitle("Men’s Shoes");
         }
     }
 
-    private  void loadProductData() {
+    private void loadProductData() {
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("product")) {
-            product = (Product) getIntent().getSerializableExtra("product");
+        if (intent != null) {
+            if (intent.hasExtra("product")) {
+                product = (Product) intent.getSerializableExtra("product");
 
-            if (product != null) {
-                tvProductDetailName.setText(product.getName());
-                tvProductDetailPrice.setText(product.getPrice());
-                ivProductDetailImage.setImageResource(product.getImageResId());
-                tvProductDetailDescription.setText("Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....");  // Mô tả từ dữ liệu
+                if (product != null) {
+                    tvProductDetailName.setText(product.getName());
+                    tvProductDetailPrice.setText(product.getPrice());
+                    ivProductDetailImage.setImageResource(product.getImageResId());
+                    tvProductDetailDescription.setText("Air Jordan is an American brand of basketball shoes...");
+                } else {
+                    Toast.makeText(this, "Product not found", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            } else if (intent.hasExtra("productName")) {
+                String name = intent.getStringExtra("productName");
+                tvProductDetailName.setText(name);
+                tvProductDetailPrice.setText("$199.00"); // Giá mặc định
+                ivProductDetailImage.setImageResource(R.drawable.img); // Ảnh mặc định
+                tvProductDetailDescription.setText("This is a demo description for " + name + ". More details can be added here.");
+            } else {
+                Toast.makeText(this, "No product data received", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
 
-    // Khởi tạo menu trên Toolbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_detail, menu);
         return true;
     }
 
-    // Xử lý sự kiện click trên Toolbar
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -115,12 +129,17 @@ public class ProductDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // Mở màn hình giỏ hàng
     private void openCartScreen() {
         Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
-        intent.putExtra("product_name", product.getName());
-        intent.putExtra("product_price", product.getPrice());
-        intent.putExtra("product_image", product.getImageResId());
+        if (product != null) {
+            intent.putExtra("product_name", product.getName());
+            intent.putExtra("product_price", product.getPrice());
+            intent.putExtra("product_image", product.getImageResId());
+        } else {
+            intent.putExtra("product_name", tvProductDetailName.getText().toString());
+            intent.putExtra("product_price", tvProductDetailPrice.getText().toString());
+            intent.putExtra("product_image", R.drawable.img);
+        }
         startActivity(intent);
         Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show();
     }

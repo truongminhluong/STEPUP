@@ -47,11 +47,11 @@
             android:layout_marginTop="24dp"
             android:textColor="#000" />
 
-        <!-- Setting Items -->
-        <include layout="@layout/item_setting_row" android:id="@+id/rowNotification"/>
-        <include layout="@layout/item_setting_row" android:id="@+id/rowShipping"/>
-        <include layout="@layout/item_setting_row" android:id="@+id/rowPayment"/>
-        <include layout="@layout/item_setting_row" android:id="@+id/rowDelete"/>
+        <!-- Setting Items (no id on include) -->
+        <include layout="@layout/item_setting_row" />
+        <include layout="@layout/item_setting_row" />
+        <include layout="@layout/item_setting_row" />
+        <include layout="@layout/item_setting_row" />
 
         <!-- App Settings Section -->
         <TextView
@@ -76,27 +76,27 @@
                 android:text="Enable Face ID For Log In"
                 android:textSize="14sp"
                 android:textColor="#000"
-                android:paddingVertical="12dp"/>
+                android:paddingVertical="12dp" />
 
             <Switch
                 android:id="@+id/switchPush"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eneble Push Notifications"
+                android:text="Enable Push Notifications"
                 android:checked="true"
                 android:textSize="14sp"
                 android:textColor="#000"
-                android:paddingVertical="12dp"/>
+                android:paddingVertical="12dp" />
 
             <Switch
                 android:id="@+id/switchLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eneble Location Services"
+                android:text="Enable Location Services"
                 android:checked="true"
                 android:textSize="14sp"
                 android:textColor="#000"
-                android:paddingVertical="12dp"/>
+                android:paddingVertical="12dp" />
 
             <Switch
                 android:id="@+id/switchDarkMode"
@@ -105,7 +105,7 @@
                 android:text="Dark Mode"
                 android:textSize="14sp"
                 android:textColor="#000"
-                android:paddingVertical="12dp"/>
+                android:paddingVertical="12dp" />
         </LinearLayout>
 
     </LinearLayout>

@@ -8,16 +8,15 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan.Adapter.SearchAdapter;
+import com.example.doan.Model.Product;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
@@ -28,8 +27,8 @@ public class SearchActivity extends AppCompatActivity {
     private ImageButton btnBack;
     private SearchAdapter adapter;
 
-    private List<String> allItems;
-    private List<String> filteredItems;
+    private final List<Product> allItems = new ArrayList<>();
+    private final List<Product> filteredItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +40,18 @@ public class SearchActivity extends AppCompatActivity {
         tvCancel = findViewById(R.id.tvCancel);
         btnBack = findViewById(R.id.btnBack);
 
-        etSearch.clearFocus(); // Không tự bật bàn phím khi vào
+        etSearch.clearFocus();
 
-        allItems = Arrays.asList(
-                "Nike Air Max Shoes",
-                "Nike Jordan Shoes",
-                "Nike Air Force Shoes",
-                "Nike Club Max Shoes",
-                "Snakers Nike Shoes",
-                "Regular Shoes"
-        );
+        // ✅ Danh sách sản phẩm thật
+        allItems.add(new Product(1, "Nike Air Max Shoes", "$150", R.drawable.img, true));
+        allItems.add(new Product(2, "Nike Jordan Shoes", "$200", R.drawable.img_1, true));
+        allItems.add(new Product(3, "Nike Air Force Shoes", "$180", R.drawable.img_7, true));
+        allItems.add(new Product(4, "Nike Club Max Shoes", "$160", R.drawable.img, true));
+        allItems.add(new Product(5, "Snakers Nike Shoes", "$140", R.drawable.img_1, true));
+        allItems.add(new Product(6, "Regular Shoes", "$120", R.drawable.img_7, true));
 
-        filteredItems = new ArrayList<>(allItems);
+        filteredItems.addAll(allItems); // Ban đầu hiển thị hết
 
-        // ✅ TRUYỀN CONTEXT CHO ADAPTER
         adapter = new SearchAdapter(this, filteredItems);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
@@ -67,20 +64,16 @@ public class SearchActivity extends AppCompatActivity {
         tvCancel.setOnClickListener(v -> {
             etSearch.setText("");
             hideKeyboard();
-            Toast.makeText(this, "Search cleared", Toast.LENGTH_SHORT).show();
         });
 
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 filterList(s.toString());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -89,8 +82,8 @@ public class SearchActivity extends AppCompatActivity {
         if (query.isEmpty()) {
             filteredItems.addAll(allItems);
         } else {
-            for (String item : allItems) {
-                if (item.toLowerCase().contains(query.toLowerCase())) {
+            for (Product item : allItems) {
+                if (item.getName().toLowerCase().contains(query.toLowerCase())) {
                     filteredItems.add(item);
                 }
             }

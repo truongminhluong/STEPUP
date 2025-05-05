@@ -1,32 +1,30 @@
 package com.example.doan.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.doan.Model.Product;
 import com.example.doan.R;
+import com.example.doan.Screens.ProductDetailActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
 
     private final Context context;
-    private final List<String> originalList;
-    private final List<String> filteredList;
+    private final List<Product> products;
 
-    // ✅ Constructor truyền đúng context
-    public SearchAdapter(Context context, List<String> searchList) {
+    public SearchAdapter(Context context, List<Product> products) {
         this.context = context;
-        this.originalList = new ArrayList<>(searchList);
-        this.filteredList = new ArrayList<>(searchList);
+        this.products = products;
     }
 
     @NonNull
@@ -38,32 +36,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
-        String item = filteredList.get(position);
-        holder.tvText.setText(item);
+        Product product = products.get(position);
+        holder.tvText.setText(product.getName());
         holder.ivIcon.setImageResource(R.drawable.ic_history);
 
-        holder.itemView.setOnClickListener(v ->
-                Toast.makeText(context, "Clicked: " + item, Toast.LENGTH_SHORT).show()
-        );
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ProductDetailActivity.class);
+            intent.putExtra("product", product); // Truyền nguyên object Product
+            context.startActivity(intent);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return filteredList.size();
-    }
-
-    public void filter(String query) {
-        filteredList.clear();
-        if (query.isEmpty()) {
-            filteredList.addAll(originalList);
-        } else {
-            for (String item : originalList) {
-                if (item.toLowerCase().contains(query.toLowerCase())) {
-                    filteredList.add(item);
-                }
-            }
-        }
-        notifyDataSetChanged();
+        return products.size();
     }
 
     public static class SearchViewHolder extends RecyclerView.ViewHolder {

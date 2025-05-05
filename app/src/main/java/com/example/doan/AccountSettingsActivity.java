@@ -17,9 +17,8 @@ public class AccountSettingsActivity extends AppCompatActivity {
 
         // Back button
         ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
 
-        // Init switches
+
         switchFaceID = findViewById(R.id.switchFaceID);
         switchPush = findViewById(R.id.switchPush);
         switchLocation = findViewById(R.id.switchLocation);
