@@ -3,6 +3,7 @@ package com.example.doan.Auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -58,6 +59,7 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         signupToolbar = findViewById(R.id.signupToolbar);
         imgTogglePassword = findViewById(R.id.iconTogglePassword);
+
     }
 
     private void setupToolbar() {
@@ -162,6 +164,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void registerWithFirebase(String email, String password) {
+        auth = FirebaseAuth.getInstance();
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -171,10 +174,13 @@ public class SignUpActivity extends AppCompatActivity {
                     } else {
                         String errorMessage;
                         if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            errorMessage = "Email đã được sử dụng.";
+                            errorMessage = "Tài khoản đã tồn tại.";
                         } else {
+                            Log.e("FIREBASE_AUTH", "Error: ", task.getException());
                             errorMessage = "Đăng ký thất bại: " + task.getException().getMessage();
                         }
+
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show(); // HIỂN THỊ TOAST
                     }
                 });
     }

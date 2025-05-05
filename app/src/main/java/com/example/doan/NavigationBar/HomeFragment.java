@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +29,8 @@ import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductNewArrivals;
 import com.example.doan.R;
 import com.example.doan.Screens.ProductDetailActivity;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +53,9 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerViewProductNewArrivals;
     private ProductNewArrivalsAdapter productNewArrivalsAdapter;
     private List<ProductNewArrivals> productNewArrivalsList;
+
+    private FirebaseFirestore db;
+    private int selectedPosition = -1;
 
 
 
@@ -76,12 +82,6 @@ public class HomeFragment extends Fragment {
 
         // Danh sách danh mục
         categoryList = new ArrayList<>();
-        categoryList.add(new Category("Nike", R.drawable.ic_nike));
-        categoryList.add(new Category("Puma", R.drawable.ic_puma));
-        categoryList.add(new Category("Under Armour", R.drawable.ic_under));
-        categoryList.add(new Category("Adidas", R.drawable.ic_adidas));
-        categoryList.add(new Category("Converse", R.drawable.ic_converse));
-
         categoryAdapter = new CategoryAdapter(categoryList, new CategoryAdapter.OnCatagoryClickListener() {
             @Override
             public void onCategoryClick(Category category) {
@@ -89,10 +89,53 @@ public class HomeFragment extends Fragment {
             }
         });
         recyclerViewCategory.setAdapter(categoryAdapter);
-        categoryAdapter.notifyDataSetChanged();
 
-        if (!categoryList.isEmpty()) {
-            loadProductsForCategory(categoryList.get(0));
+        db = FirebaseFirestore.getInstance();
+        db.collection("brands")
+                .whereEqualTo("status", true)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                   categoryList.clear();
+                   for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String id = doc.getId();
+                        String name = doc.getString("brand_name");
+                        String icon = doc.getString("logo");
+                        boolean status = doc.getBoolean("status") != null && doc.getBoolean("status");
+
+                       // Chỉ thêm nếu status là true (đã filter trên Firestore rồi)
+                       categoryList.add(new Category(id, name, icon, status));
+                   }
+
+                    // Tìm vị trí danh mục "Nike"
+                    int nikeIndex = 0;
+                    for (int i = 0; i < categoryList.size(); i++) {
+                        if (categoryList.get(i).getName().equalsIgnoreCase("Nike")) {
+                            nikeIndex = i;
+                            break;
+                        }
+                    }
+
+                    // Cập nhật vị trí đã chọn và gọi load
+                    categoryAdapter.setSelectedPosition(nikeIndex);
+                    categoryAdapter.notifyDataSetChanged();
+
+                    // Load sản phẩm của "Nike"
+                    if (!categoryList.isEmpty()) {
+                        loadProductsForCategory(categoryList.get(nikeIndex));
+                    }
+
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Lỗi khi tải danh mục", Toast.LENGTH_SHORT).show();
+                });
+
+
+    }
+
+    private void selectFirstCategory() {
+        if (categoryList != null && !categoryList.isEmpty()) {
+            selectedPosition = 0; // Chọn danh mục đầu tiên
+            categoryAdapter.notifyItemChanged(0);  // Làm nổi bật danh mục đầu tiên
         }
     }
 
@@ -103,30 +146,38 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadProductsForCategory(Category category) {
-        List<Product> productList = new ArrayList<>();
-        if (category.getName().equalsIgnoreCase("Nike")) {
-            productList.add(new Product(1, "Nike Jordan","$493.00",R.drawable.img, true));
-            productList.add(new Product(2, "Nike Revolution", "$120", R.drawable.ic_nike, true));
-            // Thêm sản phẩm khác theo danh mục Nike
-        } else if (category.getName().equalsIgnoreCase("Puma")) {
-            productList.add(new Product(3, "Puma RS-X", "$130", R.drawable.ic_puma, false));
-            // ...
-        } else if (category.getName().equalsIgnoreCase("Under Armour")) {
-            productList.add(new Product(4, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
-        } else if (category.getName().equalsIgnoreCase("Adidas")) {
-            productList.add(new Product(5, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
-        } else if (category.getName().equalsIgnoreCase("Converse")) {
-            productList.add(new Product(6, "Converse All Star", "$100", R.drawable.ic_converse, false));
-        }
+        productList = new ArrayList<>();
+        db.collection("products")
+                .whereEqualTo("brand", category.getId())
+                .whereEqualTo("status", true)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    productList.clear();
 
-        productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
-            @Override
-            public void onProductClick(Product product) {
-                navigateToProductDetail(product);
-            }
-        });
-        recyclerViewProducts.setAdapter(productAdapter);
-        productAdapter.notifyDataSetChanged();
+                    for (DocumentSnapshot doc: queryDocumentSnapshots) {
+                        Product product = doc.toObject(Product.class);
+                        String productId = doc.getId();
+                        if (product != null) {
+                            product.setId(productId); // <-- Gán ID lấy từ Firestore vào đối tượng Product
+                            productList.add(product);
+                        }
+
+                    }
+
+                    productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
+                        @Override
+                        public void onProductClick(Product product) {
+                            navigateToProductDetail(product);
+                        }
+                    });
+
+                    recyclerViewProducts.setAdapter(productAdapter);
+                    productAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Lỗi khi tải sản phẩm", Toast.LENGTH_SHORT).show();
+                });
+
 
     }
 

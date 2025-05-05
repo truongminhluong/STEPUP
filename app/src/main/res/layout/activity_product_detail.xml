@@ -75,12 +75,15 @@
 
         <TextView
             android:id="@+id/tvPDlDescription"
-            android:layout_width="314dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike...."
             android:textColor="#666666"
+            android:ellipsize="end"
+            android:maxLines="3"
             android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:textSize="16dp" />
 
         <TextView
@@ -99,24 +102,17 @@
             android:layout_height="wrap_content">
 
             <ImageView
+                android:id="@+id/imageColor1"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_marginRight="16dp"
-                android:background="@drawable/custom_image"
+                android:background="@drawable/bg_color_unselected"
                 android:src="@drawable/img_1" />
 
-            <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginRight="16dp"
-                android:background="@drawable/custom_image"
-                android:src="@drawable/img_1" />
-
-            <ImageView
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="@drawable/custom_image"
-                android:src="@drawable/img_1" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewVariantColor"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
         </LinearLayout>
 
         <include
@@ -137,66 +133,71 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/tvSize38"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="38"
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/tvSize39"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="39"
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/tvSize40"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="40"
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/tvSize41"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="41"
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/tvSize42"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="42"
                 android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/tvSize43"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:background="@drawable/custom_text_size"
+                android:background="@drawable/bg_size_unselected"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text="43"
@@ -232,10 +233,12 @@
                     android:textSize="16dp" />
 
                 <TextView
+                    android:id="@+id/tvPDValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingBottom="6dp"
                     android:text="$967.800"
+                    android:textColor="@color/black"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
