@@ -92,7 +92,11 @@ public class MainActivity extends AppCompatActivity {
                 bottomNavigationView.setSelectedItemId(R.id.notificationFragment);
             } else if (id == R.id.nav_profile) {
                 bottomNavigationView.setSelectedItemId(R.id.profileFragment);
+            }else if (id == R.id.nav_AccountAndSettings) {
+                bottomNavigationView.setSelectedItemId(R.id.accountAndSettingFragment);
+                System.out.println("count total menu:" + bottomNavigationView.getMaxItemCount());
             }
+
 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -119,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (itemId == R.id.profileFragment) {
                     // ✅ Mở ProfileActivity thay vì Fragment
+                    System.out.println("XXX---");
                     Intent intent = new Intent(MainActivity.this, com.example.doan.ProfileActivity.class);
                     startActivity(intent);
                     return true;
