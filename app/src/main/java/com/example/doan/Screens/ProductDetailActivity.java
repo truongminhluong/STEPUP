@@ -74,7 +74,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        setSupportActionBar(detailToolbar);
+//        setSupportActionBar(detailToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
