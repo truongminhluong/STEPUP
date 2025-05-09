@@ -27,7 +27,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
 import com.example.doan.Screens.MyCartActivity;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -57,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
         hideSystemUI();
         setupNavigation();
         setupActionBar();
-        setupFab();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
@@ -79,11 +77,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         navigationView.setNavigationItemSelectedListener(item -> {
-            NavController navController = ((NavHostFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.nav_host_fragment)).getNavController();
-
             int id = item.getItemId();
-
             if (id == R.id.nav_BestSeller) {
                 startActivity(new Intent(MainActivity.this, BestSellerActivity.class));
             } else if (id == R.id.nav_home) {
@@ -96,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
                 bottomNavigationView.setSelectedItemId(R.id.accountAndSettingFragment);
                 System.out.println("count total menu:" + bottomNavigationView.getMaxItemCount());
             }
-
-
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -117,21 +109,7 @@ public class MainActivity extends AppCompatActivity {
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
-
-            bottomNavigationView.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-
-                if (itemId == R.id.profileFragment) {
-                    // ✅ Mở ProfileActivity thay vì Fragment
-                    System.out.println("XXX---");
-                    Intent intent = new Intent(MainActivity.this, com.example.doan.ProfileActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-
-                // Các tab khác vẫn hoạt động như mặc định
-                return NavigationUI.onNavDestinationSelected(item, navController);
-            });
+            bottomNavigationView.setOnItemSelectedListener(item -> NavigationUI.onNavDestinationSelected(item, navController));
         } else {
             throw new IllegalStateException("NavHostFragment not found. Check your XML layout.");
         }
@@ -149,27 +127,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupFab() {
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
-            startActivity(intent);
-        });
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-
         MenuItem cartItem = menu.findItem(R.id.action_cart);
         View actionView = cartItem.getActionView();
         if (actionView != null) {
             actionView.setOnClickListener(view -> {
-                // Xử lý khi bấm giỏ hàng
+                Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+                startActivity(intent);
             });
         }
-
         return super.onCreateOptionsMenu(menu);
     }
 

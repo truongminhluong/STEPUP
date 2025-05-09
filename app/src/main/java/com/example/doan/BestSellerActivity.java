@@ -34,16 +34,16 @@ public class BestSellerActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
 
         shoeList = new ArrayList<>();
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max5", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max 5", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
         shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
         shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Force", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, true));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Force", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, false));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Force", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, true));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max", "Men's Shoes1", 254.89, new int[]{Color.BLUE, Color.RED}, false));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Force", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, true));
-        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max", "Men's Shoes 23", 254.89, new int[]{Color.BLUE, Color.RED}, false));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Zoom", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Pegasus", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, false));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike VaporMax", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, true));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Jordan", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, true));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Max 1", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, false));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Air Force 1", "Men's Shoes", 367.76, new int[]{Color.GREEN, Color.BLUE}, true));
+        shoeList.add(new ShoeItem(R.drawable.img, "Nike Court Vision", "Men's Shoes", 254.89, new int[]{Color.BLUE, Color.RED}, false));
 
         // Lưu vào DataHolder để màn khác dùng nếu cần
         DataHolder.allShoes = shoeList;
@@ -58,7 +58,6 @@ public class BestSellerActivity extends AppCompatActivity {
         // Nút filter
         ImageButton btnFilter = findViewById(R.id.btnFilter);
         btnFilter.setOnClickListener(v -> showFilterBottomSheet());
-        DataHolder.allShoes = shoeList;
     }
 
     private void showFilterBottomSheet() {
@@ -68,7 +67,7 @@ public class BestSellerActivity extends AppCompatActivity {
 
         View bottomSheet = bottomSheetDialog.getDelegate().findViewById(com.google.android.material.R.id.design_bottom_sheet);
         if (bottomSheet != null) {
-            bottomSheet.setBackground(null); // Xoá nền mặc định
+            bottomSheet.setBackground(null);
         }
 
         // Gender buttons
@@ -91,15 +90,13 @@ public class BestSellerActivity extends AppCompatActivity {
         }
 
         // Size buttons
-
-        Button btn38 = sheetView.findViewById(R.id.btn38);
-        Button btn39 = sheetView.findViewById(R.id.btn39);
-        Button btn40 = sheetView.findViewById(R.id.btn40);
-        Button btn41 = sheetView.findViewById(R.id.btn41);
-        Button btn42 = sheetView.findViewById(R.id.btn42);
-        Button btn43 = sheetView.findViewById(R.id.btn43);
-
-        List<Button> sizeButtons = Arrays.asList(btn38, btn39, btn40, btn41, btn42, btn43);
+        List<Button> sizeButtons = new ArrayList<>();
+        int[] sizes = {38, 39, 40, 41, 42, 43};
+        for (int size : sizes) {
+            int resId = getResources().getIdentifier("btn" + size, "id", getPackageName());
+            Button sizeButton = sheetView.findViewById(resId);
+            sizeButtons.add(sizeButton);
+        }
 
         View.OnClickListener sizeClickListener = v -> {
             for (Button button : sizeButtons) {
@@ -113,7 +110,7 @@ public class BestSellerActivity extends AppCompatActivity {
         for (Button b : sizeButtons) {
             b.setOnClickListener(sizeClickListener);
         }
-//apply
+
         Button btnApply = sheetView.findViewById(R.id.btnApplyFilter);
         btnApply.setOnClickListener(v -> bottomSheetDialog.dismiss());
 
