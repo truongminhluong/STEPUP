@@ -98,21 +98,14 @@
 
         <LinearLayout
             android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/imageColor1"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginRight="16dp"
-                android:background="@drawable/bg_color_unselected"
-                android:src="@drawable/img_1" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewVariantColor"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="56dp"
                 android:orientation="horizontal"
                 android:scrollbars="none"/>
         </LinearLayout>
@@ -127,90 +120,28 @@
             android:layout_height="wrap_content" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
             android:paddingLeft="20dp"
-            android:orientation="horizontal">
+            android:paddingRight="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tvSize38"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="38"
-                android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/tvSize39"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="39"
-                android:textSize="20sp" />
 
-            <TextView
-                android:id="@+id/tvSize40"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="40"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/tvSize41"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="41"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/tvSize42"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="42"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/tvSize43"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_size_unselected"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="43"
-                android:textSize="20sp" />
-
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewVariantSize"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:scrollbars="none"/>
         </LinearLayout>
+
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/custom_detail_addtocart"
             android:gravity="center"
             android:orientation="horizontal"

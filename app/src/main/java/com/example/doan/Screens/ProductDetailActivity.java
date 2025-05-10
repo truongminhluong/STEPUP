@@ -28,23 +28,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan.Adapter.ProductVariantColorAdapter;
+import com.example.doan.Adapter.ProductVariantSizeAdapter;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductVariant;
 import com.example.doan.R;
-import com.google.api.Http;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.gson.Gson;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
     private Toolbar detailToolbar;
-    private ImageView ivProductDetailImage, ivProductDetailColor1, ivProductDetailColor2, ivProductDetailColor3;
+    private ImageView ivProductDetailImage;
     private TextView tvProductDetailName, tvProductDetailPrice, tvProductDetailDescription, tvProductDetailValue;
     private Button btnAddToCart;
     private Product product;
@@ -56,6 +57,10 @@ public class ProductDetailActivity extends AppCompatActivity {
     private RecyclerView recyclerViewVariantColor;
     private ProductVariantColorAdapter productVariantColorAdapter;
     private List<ProductVariant> productVariantColorList;
+
+    private RecyclerView recyclerViewVariantSize;
+    private ProductVariantSizeAdapter productVariantSizeAdapter;
+    private List<ProductVariant> productVariantSizeList;
 
 
     @Override
@@ -71,6 +76,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
         initViews();
         setupProductVariantColor();
+        setupProductVariantSize();
         setupToolbar();
         loadProductData();
         setListeners();
@@ -87,8 +93,8 @@ public class ProductDetailActivity extends AppCompatActivity {
         tvProductDetailDescription = findViewById(R.id.tvPDlDescription);
         tvProductDetailValue = findViewById(R.id.tvPDValue);
         btnAddToCart = findViewById(R.id.btnAddToCart);
-        ivProductDetailColor1 = findViewById(R.id.imageColor1);
         recyclerViewVariantColor = findViewById(R.id.recyclerViewVariantColor);
+        recyclerViewVariantSize = findViewById(R.id.recyclerViewVariantSize);
 
     }
 
@@ -98,6 +104,15 @@ public class ProductDetailActivity extends AppCompatActivity {
         recyclerViewVariantColor.setHasFixedSize(true);
         recyclerViewVariantColor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewVariantColor.setAdapter(productVariantColorAdapter);
+
+    }
+
+    private void setupProductVariantSize(){
+        productVariantSizeList = new ArrayList<>(); // Khởi tạo danh sách trống
+        productVariantSizeAdapter = new ProductVariantSizeAdapter(productVariantSizeList);
+        recyclerViewVariantSize.setHasFixedSize(true);
+        recyclerViewVariantSize.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewVariantSize.setAdapter(productVariantSizeAdapter);
 
     }
 
@@ -115,77 +130,28 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnAddToCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (product != null && selectedSizeIndex != -1 && selectedColorIndex != -1) {
-                    Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
-                    intent.putExtra("productId", product.getId());
-                    intent.putExtra("productName", product.getName());
-                    intent.putExtra("productPrice", product.getPrice());
-                    intent.putExtra("productImage", product.getImageUrl());
-                    intent.putExtra("productSize", sizeTextViews[selectedSizeIndex].getText().toString());
-                    intent.putExtra("productColor", selectedColorIndex); // bạn có thể truyền cả màu hoặc chỉ index
-                    intent.putExtra("productQuantity", 1);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(ProductDetailActivity.this, "Vui lòng chọn kích thước và màu sắc!", Toast.LENGTH_SHORT).show();
-                }
+                //Todo add to cart
             }
         });
+        /// ///
+        productVariantColorAdapter.setOnColorSelectedListener(color -> {
+            //Todo click ảnh biến thể
+        });
 
-        // Xử lý sự kiện click vào Size
-        sizeTextViews = new TextView[] {
-                findViewById(R.id.tvSize38),
-                findViewById(R.id.tvSize39),
-                findViewById(R.id.tvSize40),
-                findViewById(R.id.tvSize41),
-                findViewById(R.id.tvSize42),
-                findViewById(R.id.tvSize43)
-        };
-        for (int i = 0; i < sizeTextViews.length ; i++) {
-            final int index = i;
-            sizeTextViews[i].setOnClickListener(v -> {
-                updateSelectedSize(index);
-            });
-        }
 
-        // Xử lý sự kiện click vào Màu
-        colorImageViews = new ImageView[] {
-                findViewById(R.id.imageColor1),
-
-        };
-
-        for (int i = 0; i < colorImageViews.length; i++) {
-            final int index = i;
-            colorImageViews[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    updateSelectedColor(index);
-                }
-            });
-        }
     }
 
-    private void updateSelectedSize(int selectedIndex) {
-        for (int i = 0; i < sizeTextViews.length; i++) {
-            if (i == selectedIndex) {
-                sizeTextViews[i].setBackgroundResource(R.drawable.bg_size_selected);
-                sizeTextViews[i].setTextColor(getResources().getColor(R.color.white));
-            } else {
-                sizeTextViews[i].setBackgroundResource(R.drawable.bg_size_unselected);
-                sizeTextViews[i].setTextColor(getResources().getColor(R.color.black));
-            }
-        }
-        selectedSizeIndex = selectedIndex;
-    }
 
-    private void updateSelectedColor(int selectedIndex) {
-        for (int i = 0; i < colorImageViews.length; i++) {
-            if (i == selectedIndex) {
-                colorImageViews[i].setBackgroundResource(R.drawable.bg_color_selected);
-            } else {
-                colorImageViews[i].setBackgroundResource(R.drawable.bg_color_unselected);
-            }
+    private boolean isNumeric(String str) {
+        if (str == null) {
+            return false;
         }
-        selectedColorIndex = selectedIndex;
+        try {
+            Double.parseDouble(str); // hoặc Integer.parseInt(str) nếu chỉ cần số nguyên
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 
@@ -207,7 +173,9 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                 Bitmap bitmap = decodeBase64ToBitmap(product.getImageUrl(), this); // Truyền Context vào đây
                 ivProductDetailImage.setImageBitmap(bitmap);
-                ivProductDetailColor1.setImageBitmap(bitmap);
+
+                Log.d("TAG", "loadProductData: +" + product.getId());
+
 
                 loadProductVariants(product.getId());
             }
@@ -224,20 +192,38 @@ public class ProductDetailActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         productVariantColorList.clear();
+                        productVariantSizeList.clear();
+
+                        Set<String> addedColors = new HashSet<>();
+                        Set<String> addedSizes = new HashSet<>();
 
                         for (QueryDocumentSnapshot doc : task.getResult()) {
                             ProductVariant variant = doc.toObject(ProductVariant.class);
-                            productVariantColorList.add(variant);
-                            Log.i("AG", "loadProductVariants: " + variant.getImage_url());
-                        }
 
+                            // Xử lý màu
+                            String color = variant.getImage_url();
+                            if (!addedColors.contains(color)) {
+                                productVariantColorList.add(variant);
+                                addedColors.add(color);
+                            }
+
+                            // Xử lý size
+                            String size = variant.getSize();
+                            if (!addedSizes.contains(size)) {
+                                productVariantSizeList.add(variant);
+                                addedSizes.add(size);
+                            }
+
+                        }
                         productVariantColorAdapter.notifyDataSetChanged();
+                        productVariantSizeAdapter.notifyDataSetChanged();
 
                     } else {
                         Log.e("FirestoreVariant", "Lỗi khi lấy biến thể", task.getException());
                     }
                 });
     }
+
 
     // Khởi tạo menu trên Toolbar
     @Override
@@ -274,7 +260,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         }
 
         try {
-            // 🛠️ Đã thêm đoạn này để hỗ trợ các định dạng khác ngoài PNG
             String base64Image = base64Str.replaceFirst("^data:image/[^;]+;base64,", "");
 
             byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
