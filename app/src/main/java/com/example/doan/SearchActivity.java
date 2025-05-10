@@ -49,7 +49,8 @@ public class SearchActivity extends AppCompatActivity {
         allItems.add(new Product(4, "Nike Club Max Shoes", "$160", R.drawable.img, true));
         allItems.add(new Product(5, "Snakers Nike Shoes", "$140", R.drawable.img_1, true));
         allItems.add(new Product(6, "Regular Shoes", "$120", R.drawable.img_7, true));
-
+        allItems.add(new Product(7, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
+        allItems.add(new Product(8, "Puma RS-X", "$130", R.drawable.ic_puma, true));
         filteredItems.addAll(allItems); // Ban đầu hiển thị hết
 
         adapter = new SearchAdapter(this, filteredItems);
