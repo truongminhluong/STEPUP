@@ -21,18 +21,17 @@ public class ProductVariantSizeAdapter extends RecyclerView.Adapter<ProductVaria
     private int selectedPosition = -1;
     private OnSizeSelectedListener listener;
 
+    // Interface callback trả về ProductVariant (KHÔNG phải String)
     public interface OnSizeSelectedListener {
-        void onSizeSelected(String size);
+        void onSizeSelected(ProductVariant variant, int position);
     }
 
-
-    // Constructor chỉ nhận danh sách
+    // Constructor nhận danh sách variant
     public ProductVariantSizeAdapter(List<ProductVariant> variantSizeList) {
         this.variantSizeList = variantSizeList;
     }
 
-
-    // Hàm set listener
+    // Gán listener từ bên ngoài
     public void setOnSizeSelectedListener(OnSizeSelectedListener listener) {
         this.listener = listener;
     }
@@ -57,7 +56,7 @@ public class ProductVariantSizeAdapter extends RecyclerView.Adapter<ProductVaria
             holder.textViewSize.setTypeface(null, Typeface.BOLD);
         } else {
             holder.textViewSize.setBackgroundResource(R.drawable.bg_size_unselected);
-            holder.textViewSize.setTextColor(Color.BLACK); // hoặc màu mặc định bạn muốn
+            holder.textViewSize.setTextColor(Color.BLACK);
             holder.textViewSize.setTypeface(null, Typeface.NORMAL);
         }
 
@@ -70,11 +69,11 @@ public class ProductVariantSizeAdapter extends RecyclerView.Adapter<ProductVaria
             notifyItemChanged(selectedPosition);
 
             if (listener != null) {
-                listener.onSizeSelected(variantSizeList.get(selectedPosition).getSize());
-
+                // ✅ SỬA LỖI: Truyền đúng kiểu ProductVariant vào callback
+                listener.onSizeSelected(variantSizeList.get(selectedPosition), selectedPosition);
+                // Trước đây bị lỗi vì gọi: .getSize() → trả về String, không đúng interface
             }
         });
-
     }
 
     @Override
@@ -83,13 +82,11 @@ public class ProductVariantSizeAdapter extends RecyclerView.Adapter<ProductVaria
     }
 
     public static class ProductVariantSizeViewHolder extends RecyclerView.ViewHolder {
-
         TextView textViewSize;
 
         public ProductVariantSizeViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewSize = itemView.findViewById(R.id.tvSize);
-
         }
     }
 }

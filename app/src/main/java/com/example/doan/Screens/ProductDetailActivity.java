@@ -101,6 +101,11 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void setupProductVariantColor(){
         productVariantColorList = new ArrayList<>(); // Khởi tạo danh sách trống
         productVariantColorAdapter = new ProductVariantColorAdapter(productVariantColorList);
+
+        productVariantColorAdapter.setOnColorSelectedListener((color, position) -> {
+            selectedColorIndex = position;
+        });
+
         recyclerViewVariantColor.setHasFixedSize(true);
         recyclerViewVariantColor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewVariantColor.setAdapter(productVariantColorAdapter);
@@ -110,6 +115,11 @@ public class ProductDetailActivity extends AppCompatActivity {
     private void setupProductVariantSize(){
         productVariantSizeList = new ArrayList<>(); // Khởi tạo danh sách trống
         productVariantSizeAdapter = new ProductVariantSizeAdapter(productVariantSizeList);
+
+        productVariantSizeAdapter.setOnSizeSelectedListener((size, position) -> {
+            selectedSizeIndex = position;
+        });
+
         recyclerViewVariantSize.setHasFixedSize(true);
         recyclerViewVariantSize.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recyclerViewVariantSize.setAdapter(productVariantSizeAdapter);
@@ -130,12 +140,35 @@ public class ProductDetailActivity extends AppCompatActivity {
         btnAddToCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Todo add to cart
+                if (selectedColorIndex == -1) {
+                    Toast.makeText(ProductDetailActivity.this, "Vui lòng chọn màu sản phẩm", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (selectedSizeIndex == -1) {
+                    Toast.makeText(ProductDetailActivity.this, "Vui lòng chọn kích thước sản phẩm", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                ProductVariant selectedColorVariant = productVariantColorList.get(selectedColorIndex);
+                ProductVariant selectedSizeVariant = productVariantSizeList.get(selectedSizeIndex);
+
+                // TODO: Thêm vào giỏ hàng với thông tin: product, selectedColorVariant, selectedSizeVariant
+                Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+
+
             }
         });
-        /// ///
-        productVariantColorAdapter.setOnColorSelectedListener(color -> {
-            //Todo click ảnh biến thể
+        //màu
+        productVariantColorAdapter.setOnColorSelectedListener((variant, position) -> {
+            selectedColorIndex = position;
+            Bitmap bitmap = decodeBase64ToBitmap(variant.getImage_url(), ProductDetailActivity.this);
+            ivProductDetailImage.setImageBitmap(bitmap);
+        });
+        //size
+        productVariantSizeAdapter.setOnSizeSelectedListener((variant, position) -> {
+            selectedSizeIndex = position;
+            Toast.makeText(ProductDetailActivity.this, "Đã chọn size: " + variant.getSize(), Toast.LENGTH_SHORT).show();
         });
 
 
@@ -215,6 +248,13 @@ public class ProductDetailActivity extends AppCompatActivity {
                             }
 
                         }
+                        productVariantSizeList.sort((v1, v2) -> {
+                            try {
+                                return Integer.compare(Integer.parseInt(v1.getSize()), Integer.parseInt(v2.getSize()));
+                            } catch (NumberFormatException e) {
+                                return v1.getSize().compareTo(v2.getSize()); // fallback nếu size không phải số
+                            }
+                        });
                         productVariantColorAdapter.notifyDataSetChanged();
                         productVariantSizeAdapter.notifyDataSetChanged();
 

@@ -23,11 +23,12 @@ public class ProductVariantColorAdapter extends RecyclerView.Adapter<ProductVari
     private List<ProductVariant> variantColorList;
     private int selectedPosition = RecyclerView.NO_POSITION;
 
-    public interface OnColorSelectedListener {
-        void onColorSelected(String productVariantId); // Gửi product_variant_id khi chọn
-    }
 
     private OnColorSelectedListener listener;
+
+    public interface OnColorSelectedListener {
+        void onColorSelected(ProductVariant variant, int position);
+    }
 
     public void setOnColorSelectedListener(OnColorSelectedListener listener) {
         this.listener = listener;
@@ -64,7 +65,8 @@ public class ProductVariantColorAdapter extends RecyclerView.Adapter<ProductVari
 
             if (listener != null && selectedPosition >= 0 && selectedPosition < variantColorList.size()) {
                 // Use the correct ID - the variant's ID, not product_id
-                listener.onColorSelected(variantColorList.get(selectedPosition).getProduct_id());
+                ProductVariant selectedVariant = variantColorList.get(selectedPosition);
+                listener.onColorSelected(selectedVariant, selectedPosition);
 
                 // Log the selection for debugging
                 Log.d("ColorAdapter", "Selected variant ID: " + variantColorList.get(selectedPosition).getProduct_id());
