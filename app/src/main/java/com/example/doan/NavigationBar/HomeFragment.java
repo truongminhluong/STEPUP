@@ -1,3 +1,4 @@
+
 package com.example.doan.NavigationBar;
 
 import android.content.Intent;
@@ -32,7 +33,9 @@ import com.example.doan.SearchActivity;
 import com.example.doan.SeeAllShoesActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HomeFragment extends Fragment {
 
@@ -42,71 +45,52 @@ public class HomeFragment extends Fragment {
     private ProductNewArrivalsAdapter productNewArrivalsAdapter;
 
     private Category currentCategory;
-    private List<Category> categoryList;
-    private List<ProductNewArrivals> productNewArrivalsList;
+    private List<Category> categoryList = new ArrayList<>();
+    private List<ProductNewArrivals> productNewArrivalsList = new ArrayList<>();
+    private final Map<String, List<Product>> productMap = new HashMap<>();
 
     private int currentIndex = 0;
     private Handler autoScrollHandler;
     private Runnable autoScrollRunnable;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-
         setupSearch(view);
-        setupPopularShoes(view);     // 🔄 Đặt TRƯỚC để gán biến recyclerViewPopularShoes
-        setupCategory(view);         // Đặt SAU, vì nó gọi updatePopularShoesByCategory()
+        setupPopularShoes(view);
+        setupCategory(view);
         setupProductNewArrivals(view);
-
         return view;
     }
-
-
-
-//    private void setupSearch(View view) {
-//        EditText searchEdt = view.findViewById(R.id.searchEdt);
-//        // TODO: Logic tìm kiếm nếu cần
-//    }
-    private void setupSearch(View view) {
-        EditText searchEdt = view.findViewById(R.id.searchEdt);
-        searchEdt.setFocusable(false);
-        searchEdt.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), SearchActivity.class);
-            startActivity(intent);
-        });
-    }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        TextView txtSeeAll = view.findViewById(R.id.txtSeeAll);
-        txtSeeAll.setOnClickListener(v -> {
+        view.findViewById(R.id.txtSeeAll).setOnClickListener(v -> {
             String selectedCategory = currentCategory != null ? currentCategory.getName() : "Nike";
             Intent intent = new Intent(getActivity(), SeeAllShoesActivity.class);
             intent.putExtra("category", selectedCategory);
             startActivity(intent);
         });
 
-        TextView txtSeeAll1 = view.findViewById(R.id.txtSeeAll1);
-        txtSeeAll1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), AllShoesByCategoryActivity.class);
-                intent.putExtra("category", "new_arrivals"); // gán category đặc biệt cho New Arrivals
-                startActivity(intent);
-            }
+        view.findViewById(R.id.txtSeeAll1).setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AllShoesByCategoryActivity.class);
+            intent.putExtra("category", "new_arrivals");
+            startActivity(intent);
         });
+    }
 
+    private void setupSearch(View view) {
+        EditText searchEdt = view.findViewById(R.id.searchEdt);
+        searchEdt.setFocusable(false);
+        searchEdt.setOnClickListener(v -> startActivity(new Intent(getActivity(), SearchActivity.class)));
     }
 
     private void setupCategory(View view) {
         recyclerViewCategory = view.findViewById(R.id.recyclerViewCategory);
         recyclerViewCategory.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        categoryList = new ArrayList<>();
         categoryList.add(new Category("Nike", R.drawable.ic_nike));
         categoryList.add(new Category("Puma", R.drawable.ic_puma));
         categoryList.add(new Category("Under Armour", R.drawable.ic_under));
@@ -117,135 +101,84 @@ public class HomeFragment extends Fragment {
             currentCategory = category;
             updatePopularShoesByCategory(category);
         });
-
         recyclerViewCategory.setAdapter(categoryAdapter);
 
+        prepareProductData(); // prepare map
         if (!categoryList.isEmpty()) {
             currentCategory = categoryList.get(0);
             updatePopularShoesByCategory(currentCategory);
         }
     }
 
+    private void prepareProductData() {
+        productMap.clear();
+
+        productMap.put("Nike", List.of(
+                new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true),
+                new Product(2, "Nike Revolution", "$120", R.drawable.img_7, true),
+                new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true)
+        ));
+
+        List<Product> puma = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            puma.add(new Product(6 + i, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+        }
+        productMap.put("Puma", puma);
+
+        productMap.put("Under Armour", List.of(
+                new Product(7, "Under Armour HOVR", "$140", R.drawable.ic_under, true)
+        ));
+
+        productMap.put("Adidas", List.of(
+                new Product(8, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true)
+        ));
+
+        productMap.put("Converse", List.of(
+                new Product(9, "Converse All Star", "$100", R.drawable.ic_converse, true)
+        ));
+    }
+
     private void setupPopularShoes(View view) {
         recyclerViewPopularShoes = view.findViewById(R.id.recyclerPopularShoes);
         recyclerViewPopularShoes.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-
-        if (categoryList != null && !categoryList.isEmpty()) {
-            updatePopularShoesByCategory(categoryList.get(0));
-        }
     }
-
-
 
     private void setupProductNewArrivals(View view) {
         recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        recyclerViewProductNewArrivals.setLayoutManager(layoutManager);
+        recyclerViewProductNewArrivals.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        productNewArrivalsList = new ArrayList<>();
-        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true,true,"A popular choice among sneaker enthusiasts."));
-        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true,true, "Comfort and style combined in one sneaker."));
-        productNewArrivalsList.add(new ProductNewArrivals(3, "Nike Jordan", "$493.00", R.drawable.img_1, true,true, "Iconic design and performance."));
-        productNewArrivalsList.add(new ProductNewArrivals(4, "Nike Air Max 90", "$150.00", R.drawable.img, true,true, "Perfect for daily wear."));
-        productNewArrivalsList.add(new ProductNewArrivals(5, "Nike Jordan", "$493.00", R.drawable.img_1, true,true, "Best choice for sports lovers."));
-        productNewArrivalsList.add(new ProductNewArrivals(6, "Nike Air Max 90", "$150.00", R.drawable.img, true,true, "Classic look, modern comfort."));
-        productNewArrivalsList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true,true, "Affordable yet stylish."));
+        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true, true, "Top choice"));
+        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true, true, "Best seller"));
+        productNewArrivalsList.add(new ProductNewArrivals(3, "Nike Air Max 90", "$150.00", R.drawable.img1, true, true, "Classic choice"));
 
         productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList, product -> {
             Intent intent = new Intent(getContext(), ProductDetailActivity1.class);
-            intent.putExtra("productNewArrivals", product); // Truyền nguyên đối tượng
+            intent.putExtra("productNewArrivals", product);
             startActivity(intent);
         });
 
-
         recyclerViewProductNewArrivals.setAdapter(productNewArrivalsAdapter);
 
-
-        // Tự động scroll
         autoScrollHandler = new Handler();
-        autoScrollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (currentIndex >= productNewArrivalsList.size()) {
-                    currentIndex = 0; // Quay lại đầu danh sách
-                }
-                recyclerViewProductNewArrivals.smoothScrollToPosition(currentIndex);
-                currentIndex++;
-
-                // Chờ 15 giây rồi tiếp tục
-                autoScrollHandler.postDelayed(this, 7000);
-            }
+        autoScrollRunnable = () -> {
+            if (currentIndex >= productNewArrivalsList.size()) currentIndex = 0;
+            recyclerViewProductNewArrivals.smoothScrollToPosition(currentIndex++);
+            autoScrollHandler.postDelayed(autoScrollRunnable, 7000);
         };
-
-        // Bắt đầu auto scroll
         autoScrollHandler.postDelayed(autoScrollRunnable, 7000);
-    }
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (autoScrollHandler != null && autoScrollRunnable != null) {
-            autoScrollHandler.removeCallbacks(autoScrollRunnable);
-        }
-    }
-
-
-
-    private void navigateToProductDetail(Product product) {
-        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
-        intent.putExtra("product", product);
-        startActivity(intent);
     }
 
     private void updatePopularShoesByCategory(Category category) {
-        List<Product> filteredProducts = new ArrayList<>();
+        List<Product> products = productMap.getOrDefault(category.getName(), new ArrayList<>());
+        List<Product> topProducts = new ArrayList<>();
 
-        if (category.getName().equalsIgnoreCase("Nike")) {
-            filteredProducts.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
-            filteredProducts.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_7, true));
-            filteredProducts.add(new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
-            filteredProducts.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img, true));
-            filteredProducts.add(new Product(5, "Nike Blazer Mid", "$180.00", R.drawable.img_7, true));
-        } else if (category.getName().equalsIgnoreCase("Puma")) {
-            filteredProducts.add(new Product(6, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-            filteredProducts.add(new Product(10, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-            filteredProducts.add(new Product(11, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-            filteredProducts.add(new Product(12, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-            filteredProducts.add(new Product(13, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-        } else if (category.getName().equalsIgnoreCase("Under Armour")) {
-            filteredProducts.add(new Product(7, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
-        } else if (category.getName().equalsIgnoreCase("Adidas")) {
-            filteredProducts.add(new Product(8, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
-        } else if (category.getName().equalsIgnoreCase("Converse")) {
-            filteredProducts.add(new Product(9, "Converse All Star", "$100", R.drawable.ic_converse, true));
+        for (int i = 0; i < Math.min(3, products.size()); i++) {
+            if (products.get(i).isBestSeller()) topProducts.add(products.get(i));
         }
 
-        // Gán đầy đủ 9 sản phẩm vào DataHolder (nếu dùng)
-        ArrayList<ShoeItem> fullList = new ArrayList<>();
-        for (Product p : filteredProducts) {
-            if (p.isBestSeller()) {
-                fullList.add(new ShoeItem(
-                        p.getImageResId(),
-                        p.getName(),
-                        category.getName(),
-                        Double.parseDouble(p.getPrice().replace("$", "")),
-                        new int[]{Color.BLACK, Color.GRAY},
-                        true
-                ));
-            }
-        }
-        DataHolder.allShoes = fullList;
-        currentCategory = category;
+        topProducts.add(new Product(-1, "SEE_ALL", "", R.drawable.ic_arrow_right, false));
 
-        // Lấy top 4
-        List<Product> top4 = new ArrayList<>();
-        for (int i = 0; i < Math.min(3, filteredProducts.size()); i++) {
-            Product p = filteredProducts.get(i);
-            if (p.isBestSeller()) top4.add(p);
-        }
-
-        top4.add(new Product(-1, "SEE_ALL", "", R.drawable.ic_arrow_right, false));
-
-        popularAdapter = new ProductAdapter(top4, product -> {
+        popularAdapter = new ProductAdapter(topProducts, product -> {
             if ("SEE_ALL".equals(product.getName())) {
                 Intent intent = new Intent(getActivity(), SeeAllShoesActivity.class);
                 intent.putExtra("category", category.getName());
@@ -254,39 +187,24 @@ public class HomeFragment extends Fragment {
                 navigateToProductDetail(product);
             }
         });
-        DataHolder.allShoes = getAllBestSellerShoes();
 
         recyclerViewPopularShoes.setAdapter(popularAdapter);
+        DataHolder.allShoes = getAllBestSellerShoes();
+    }
+
+    private void navigateToProductDetail(Product product) {
+        Intent intent = new Intent(getContext(), ProductDetailActivity.class);
+        intent.putExtra("product", product);
+        startActivity(intent);
     }
 
     private ArrayList<ShoeItem> getAllBestSellerShoes() {
         ArrayList<ShoeItem> result = new ArrayList<>();
-
-        if (categoryList == null) return result;
-
         for (Category cat : categoryList) {
-            List<Product> temp = new ArrayList<>();
-            if (cat.getName().equalsIgnoreCase("Nike")) {
-                temp.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
-                temp.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_1, true));
-                temp.add(new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
-                temp.add(new Product(4, "Nike Air Force 1", "$130.00", R.drawable.img_7, true));
-                temp.add(new Product(10, "Nike Jordan", "$493.00", R.drawable.img, true));
-                temp.add(new Product(9, "Nike Revolution", "$120", R.drawable.img_1, true));
-                temp.add(new Product(8, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
-                temp.add(new Product(7, "Nike Air Force 1", "$130.00", R.drawable.img_7, true));
-            } else if (cat.getName().equalsIgnoreCase("Puma")) {
-                temp.add(new Product(5, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-                temp.add(new Product(11, "Puma RS-X", "$130", R.drawable.ic_puma, true));
-            } else if (cat.getName().equalsIgnoreCase("Under Armour")) {
-                temp.add(new Product(6, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
-            } else if (cat.getName().equalsIgnoreCase("Adidas")) {
-                temp.add(new Product(7, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
-            } else if (cat.getName().equalsIgnoreCase("Converse")) {
-                temp.add(new Product(8, "Converse All Star", "$100", R.drawable.ic_converse, true));
-            }
+            List<Product> products = productMap.get(cat.getName());
+            if (products == null) continue;
 
-            for (Product p : temp) {
+            for (Product p : products) {
                 if (p.isBestSeller()) {
                     result.add(new ShoeItem(
                             p.getImageResId(),
@@ -299,7 +217,14 @@ public class HomeFragment extends Fragment {
                 }
             }
         }
-
         return result;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (autoScrollHandler != null && autoScrollRunnable != null) {
+            autoScrollHandler.removeCallbacks(autoScrollRunnable);
+        }
     }
 }
