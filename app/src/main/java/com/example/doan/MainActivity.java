@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -30,6 +31,16 @@ import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+
+import com.google.gson.Gson;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +67,45 @@ public class MainActivity extends AppCompatActivity {
         hideSystemUI();
         setupNavigation();
         setupActionBar();
+        setupDrawer();
 
+        // Gọi API khi mở app
+        fetchProducts();
+    }
+
+    private void fetchProducts() {
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("http://10.0.2.2:3000/api/products")  // ← DÙNG ĐÚNG CHO EMULATOR
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Lỗi kết nối API", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Lỗi phản hồi từ server", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                String json = response.body().string();
+                runOnUiThread(() -> {
+                    // Hiển thị JSON trong Toast, hoặc bạn có thể parse bằng Gson để hiển thị danh sách
+                    Toast.makeText(MainActivity.this, "Dữ liệu nhận được:\n" + json, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+
+    private void setupDrawer() {
         NavigationView navigationView = findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         TextView tvName = headerView.findViewById(R.id.tv_user_name);
@@ -73,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         LinearLayout signOutLayout = findViewById(R.id.sign_out_container);
         signOutLayout.setOnClickListener(v -> {
-            // Sign out logic here
+            // TODO: Xử lý đăng xuất
         });
 
         navigationView.setNavigationItemSelectedListener(item -> {
@@ -86,9 +135,8 @@ public class MainActivity extends AppCompatActivity {
                 bottomNavigationView.setSelectedItemId(R.id.notificationFragment);
             } else if (id == R.id.nav_profile) {
                 bottomNavigationView.setSelectedItemId(R.id.profileFragment);
-            }else if (id == R.id.nav_AccountAndSettings) {
+            } else if (id == R.id.nav_AccountAndSettings) {
                 bottomNavigationView.setSelectedItemId(R.id.accountAndSettingFragment);
-                System.out.println("count total menu:" + bottomNavigationView.getMaxItemCount());
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
