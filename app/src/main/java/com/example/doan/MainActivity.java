@@ -1,12 +1,15 @@
 package com.example.doan;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,39 +18,45 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
-import com.example.doan.Adapter.CategoryAdapter;
-import com.example.doan.Auth.SignInActivity;
+import com.bumptech.glide.Glide;
 import com.example.doan.Screens.MyCartActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.NavController;
-import androidx.navigation.ui.NavigationUI;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.doan.Model.Category;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
+import com.google.android.material.navigation.NavigationView;
 
-import android.os.Build;
-import android.util.Log;
+import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.List;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
+    private DrawerLayout drawerLayout;
+    private BottomNavigationView bottomNavigationView;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        drawerLayout = findViewById(R.id.main);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // Cập nhật padding hệ thống cho layout chính
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -57,27 +66,84 @@ public class MainActivity extends AppCompatActivity {
         hideSystemUI();
         setupNavigation();
         setupActionBar();
-        setupFab();
+        setupDrawer();
 
+        // Gọi API khi mở app
+        fetchProducts();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Kiểm tra xem người dùng đã đăng nhập hay chưa
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            // Chưa đăng nhập → chuyển về trang đăng nhập
-            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
-            startActivity(intent);
-            finish(); // Không cho quay lại Main nếu chưa login
-        }
-        // Nếu đã đăng nhập thì tiếp tục ở lại MainActivity như bình thường
+    private void fetchProducts() {
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url("http://10.0.2.2:3000/api/products") // Địa chỉ localhost cho emulator
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Lỗi kết nối API", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Lỗi phản hồi từ server", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                String json = response.body().string();
+                runOnUiThread(() -> {
+                    // TODO: Hiển thị hoặc xử lý JSON
+                    Toast.makeText(MainActivity.this, "Dữ liệu nhận được:\n" + json, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+    private void setupDrawer() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+
+        TextView tvName = headerView.findViewById(R.id.tv_user_name);
+        TextView tvHello = headerView.findViewById(R.id.tv_hello);
+        ImageView imgAvatar = headerView.findViewById(R.id.img_avatar);
+
+        tvName.setText("Alisson Becker");
+        tvHello.setText("Hey, 👋");
+
+        Glide.with(this)
+                .load("https://yourdomain.com/avatar.jpg")
+                .placeholder(R.drawable.avatar_sample)
+                .into(imgAvatar);
+
+        LinearLayout signOutLayout = findViewById(R.id.sign_out_container);
+        signOutLayout.setOnClickListener(v -> {
+            // TODO: Thêm logic đăng xuất ở đây
+        });
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_BestSeller) {
+                startActivity(new Intent(MainActivity.this, BestSellerActivity.class));
+            } else if (id == R.id.nav_home) {
+                bottomNavigationView.setSelectedItemId(R.id.homeFragment);
+            } else if (id == R.id.nav_notifications) {
+                bottomNavigationView.setSelectedItemId(R.id.notificationFragment);
+            } else if (id == R.id.nav_profile) {
+                bottomNavigationView.setSelectedItemId(R.id.profileFragment);
+            } else if (id == R.id.nav_AccountAndSettings) {
+                bottomNavigationView.setSelectedItemId(R.id.accountAndSettingFragment);
+            }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
     }
 
     private void hideSystemUI() {
         getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION  // Ẩn thanh điều hướng
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY // Duy trì chế độ fullscreen
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         );
     }
 
@@ -87,12 +153,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (navHostFragment != null) {
             NavController navController = navHostFragment.getNavController();
-
-            // Liên kết Navigation Component với BottomNavigationView
-            BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
+            bottomNavigationView.setOnItemSelectedListener(item ->
+                    NavigationUI.onNavDestinationSelected(item, navController));
         } else {
-            throw new IllegalStateException("NavHostFragment not found. Check your XML layout.");
+            throw new IllegalStateException("NavHostFragment không tồn tại. Kiểm tra file layout.");
         }
     }
 
@@ -105,21 +170,20 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
             actionBar.setDisplayShowTitleEnabled(false);
-//            actionBar.setLogo(R.drawable.ic_logo);
         }
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
-
         MenuItem cartItem = menu.findItem(R.id.action_cart);
-        View ationView = cartItem.getActionView();
-        if (ationView != null) {
-            ationView.setOnClickListener(view -> {
-                Toast.makeText(this, "Gio hang", Toast.LENGTH_SHORT).show();
+
+        View actionView = cartItem.getActionView();
+        if (actionView != null) {
+            actionView.setOnClickListener(view -> {
+                Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
+                startActivity(intent);
             });
         }
         return super.onCreateOptionsMenu(menu);
@@ -130,29 +194,13 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show();
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(MainActivity.this, SignInActivity.class);
-            startActivity(intent);
-            finish();
+            drawerLayout.openDrawer(GravityCompat.START);
             return true;
-        }else if (id == R.id.action_cart) {
-            Toast.makeText(this, "Gio hang", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.action_cart) {
+            // Mặc định xử lý khi nhấn biểu tượng giỏ hàng → đã xử lý ở onCreateOptionsMenu
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
-
-    private void setupFab() {
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, MyCartActivity.class);
-                startActivity(intent);
-            }
-        });
-    }
-
 }
-

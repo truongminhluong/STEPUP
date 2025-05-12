@@ -30,5 +30,10 @@
         android:name="com.example.doan.NavigationBar.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile"/>
+    <fragment
+        android:id="@+id/accountAndSettingFragment"
+        android:name="com.example.doan.NavigationBar.AccountAndSettingFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile"/>
 
 </navigation>

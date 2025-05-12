@@ -1,16 +1,9 @@
 package com.example.doan.Screens;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.text.Html;
-import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,50 +17,25 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.doan.Adapter.ProductVariantColorAdapter;
-import com.example.doan.Adapter.ProductVariantSizeAdapter;
 import com.example.doan.Model.Product;
-import com.example.doan.Model.ProductVariant;
 import com.example.doan.R;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
     private Toolbar detailToolbar;
     private ImageView ivProductDetailImage;
-    private TextView tvProductDetailName, tvProductDetailPrice, tvProductDetailDescription, tvProductDetailValue;
+    private TextView tvProductDetailName, tvProductDetailPrice, tvProductDetailDescription;
     private Button btnAddToCart;
-    private Product product;
-    private TextView[] sizeTextViews;
-    int selectedSizeIndex = -1;
-    private ImageView[] colorImageViews;
-    private int selectedColorIndex = -1;
 
-    private RecyclerView recyclerViewVariantColor;
-    private ProductVariantColorAdapter productVariantColorAdapter;
-    private List<ProductVariant> productVariantColorList;
-
-    private RecyclerView recyclerViewVariantSize;
-    private ProductVariantSizeAdapter productVariantSizeAdapter;
-    private List<ProductVariant> productVariantSizeList;
-
+    private Product product = null; // Có thể null nếu vào từ tìm kiếm
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_product_detail);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -75,164 +43,79 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         initViews();
-        setupProductVariantColor();
-        setupProductVariantSize();
         setupToolbar();
         loadProductData();
-        setListeners();
 
+        btnAddToCart.setOnClickListener(view -> {
+            Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
 
+            if (product != null) {
+                intent.putExtra("product_name", product.getName());
+                intent.putExtra("product_price", product.getPrice());
+                intent.putExtra("product_image", product.getImageResId());
+            } else {
+                intent.putExtra("product_name", tvProductDetailName.getText().toString());
+                intent.putExtra("product_price", tvProductDetailPrice.getText().toString());
+                intent.putExtra("product_image", R.drawable.img); // ảnh mặc định
+            }
+
+            startActivity(intent);
+        });
     }
 
-    // Ánh xạ các view
     private void initViews() {
         detailToolbar = findViewById(R.id.detailToolbar);
         ivProductDetailImage = findViewById(R.id.ivPDImage);
         tvProductDetailName = findViewById(R.id.tvPDName);
         tvProductDetailPrice = findViewById(R.id.tvPDPrice);
         tvProductDetailDescription = findViewById(R.id.tvPDlDescription);
-        tvProductDetailValue = findViewById(R.id.tvPDValue);
         btnAddToCart = findViewById(R.id.btnAddToCart);
-        recyclerViewVariantColor = findViewById(R.id.recyclerViewVariantColor);
-        recyclerViewVariantSize = findViewById(R.id.recyclerViewVariantSize);
-
-    }
-
-    private void setupProductVariantColor(){
-        productVariantColorList = new ArrayList<>(); // Khởi tạo danh sách trống
-        productVariantColorAdapter = new ProductVariantColorAdapter(productVariantColorList);
-        recyclerViewVariantColor.setHasFixedSize(true);
-        recyclerViewVariantColor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewVariantColor.setAdapter(productVariantColorAdapter);
-
-    }
-
-    private void setupProductVariantSize(){
-        productVariantSizeList = new ArrayList<>(); // Khởi tạo danh sách trống
-        productVariantSizeAdapter = new ProductVariantSizeAdapter(productVariantSizeList);
-        recyclerViewVariantSize.setHasFixedSize(true);
-        recyclerViewVariantSize.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewVariantSize.setAdapter(productVariantSizeAdapter);
-
     }
 
     private void setupToolbar() {
         setSupportActionBar(detailToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
-            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
             actionBar.setTitle("Men’s Shoes");
         }
     }
 
-    private void setListeners() {
-        btnAddToCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Todo add to cart
-            }
-        });
-        /// ///
-        productVariantColorAdapter.setOnColorSelectedListener(color -> {
-            //Todo click ảnh biến thể
-        });
-
-
-    }
-
-
-    private boolean isNumeric(String str) {
-        if (str == null) {
-            return false;
-        }
-        try {
-            Double.parseDouble(str); // hoặc Integer.parseInt(str) nếu chỉ cần số nguyên
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-
     private void loadProductData() {
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("product")) {
-            product = (Product) intent.getSerializableExtra("product");
-            if (product != null) {
-                Log.d("ProductData", "Product ID: " + product.getId());
-                tvProductDetailName.setText(product.getName());
+        if (intent != null) {
+            if (intent.hasExtra("product")) {
+                product = (Product) intent.getSerializableExtra("product");
 
-                NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-                String formattedPrice = formatter.format(product.getPrice());
-                tvProductDetailPrice.setText(formattedPrice);
-                tvProductDetailValue.setText(formattedPrice);
-
-                String htmlString = product.getDescription();
-                tvProductDetailDescription.setText(Html.fromHtml(htmlString, Html.FROM_HTML_MODE_LEGACY));// Mô tả từ dữ liệu
-
-                Bitmap bitmap = decodeBase64ToBitmap(product.getImageUrl(), this); // Truyền Context vào đây
-                ivProductDetailImage.setImageBitmap(bitmap);
-
-                Log.d("TAG", "loadProductData: +" + product.getId());
-
-
-                loadProductVariants(product.getId());
+                if (product != null) {
+                    tvProductDetailName.setText(product.getName());
+                    tvProductDetailPrice.setText(product.getPrice());
+                    ivProductDetailImage.setImageResource(product.getImageResId());
+                    tvProductDetailDescription.setText("Air Jordan is an American brand of basketball shoes...");
+                } else {
+                    Toast.makeText(this, "Product not found", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            } else if (intent.hasExtra("productName")) {
+                String name = intent.getStringExtra("productName");
+                tvProductDetailName.setText(name);
+                tvProductDetailPrice.setText("$199.00"); // Giá mặc định
+                ivProductDetailImage.setImageResource(R.drawable.img); // Ảnh mặc định
+                tvProductDetailDescription.setText("This is a demo description for " + name + ". More details can be added here.");
+            } else {
+                Toast.makeText(this, "No product data received", Toast.LENGTH_SHORT).show();
+                finish();
             }
-
-
         }
     }
 
-    private void loadProductVariants(String productId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("product_variants")
-                .whereEqualTo("product_id", productId)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        productVariantColorList.clear();
-                        productVariantSizeList.clear();
-
-                        Set<String> addedColors = new HashSet<>();
-                        Set<String> addedSizes = new HashSet<>();
-
-                        for (QueryDocumentSnapshot doc : task.getResult()) {
-                            ProductVariant variant = doc.toObject(ProductVariant.class);
-
-                            // Xử lý màu
-                            String color = variant.getImage_url();
-                            if (!addedColors.contains(color)) {
-                                productVariantColorList.add(variant);
-                                addedColors.add(color);
-                            }
-
-                            // Xử lý size
-                            String size = variant.getSize();
-                            if (!addedSizes.contains(size)) {
-                                productVariantSizeList.add(variant);
-                                addedSizes.add(size);
-                            }
-
-                        }
-                        productVariantColorAdapter.notifyDataSetChanged();
-                        productVariantSizeAdapter.notifyDataSetChanged();
-
-                    } else {
-                        Log.e("FirestoreVariant", "Lỗi khi lấy biến thể", task.getException());
-                    }
-                });
-    }
-
-
-    // Khởi tạo menu trên Toolbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_detail, menu);
         return true;
     }
 
-    // Xử lý sự kiện click trên Toolbar
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -245,38 +128,18 @@ public class ProductDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // Mở màn hình giỏ hàng
     private void openCartScreen() {
-        Toast.makeText(this, "Cart", Toast.LENGTH_SHORT).show();
-    }
-
-    public Bitmap decodeBase64ToBitmap(String base64Str, Context context) {
-        Log.d("Base64String", base64Str);
-
-        // Kiểm tra chuỗi Base64 hợp lệ
-        if (base64Str == null || base64Str.trim().isEmpty()) {
-            Log.e("Base64Error", "Chuỗi Base64 không hợp lệ");
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
+        Intent intent = new Intent(ProductDetailActivity.this, MyCartActivity.class);
+        if (product != null) {
+            intent.putExtra("product_name", product.getName());
+            intent.putExtra("product_price", product.getPrice());
+            intent.putExtra("product_image", product.getImageResId());
+        } else {
+            intent.putExtra("product_name", tvProductDetailName.getText().toString());
+            intent.putExtra("product_price", tvProductDetailPrice.getText().toString());
+            intent.putExtra("product_image", R.drawable.img);
         }
-
-        try {
-            String base64Image = base64Str.replaceFirst("^data:image/[^;]+;base64,", "");
-
-            byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-
-            if (bitmap == null) {
-                Log.e("Base64Error", "Không thể giải mã Base64 thành Bitmap");
-                return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
-            }
-
-            return bitmap;
-        } catch (IllegalArgumentException e) {
-            Log.e("Base64Error", "Lỗi khi giải mã Base64", e);
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
-        } catch (Exception e) {
-            Log.e("Base64Error", "Lỗi không xác định", e);
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
-        }
+        startActivity(intent);
+        Toast.makeText(this, "Giỏ hàng", Toast.LENGTH_SHORT).show();
     }
 }

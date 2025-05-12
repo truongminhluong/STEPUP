@@ -1,203 +1,247 @@
 package com.example.doan.NavigationBar;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.util.Log;
+import android.os.Handler;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan.Adapter.CategoryAdapter;
 import com.example.doan.Adapter.ProductAdapter;
 import com.example.doan.Adapter.ProductNewArrivalsAdapter;
+import com.example.doan.AllShoesByCategoryActivity;
+import com.example.doan.Data.DataHolder;
 import com.example.doan.Model.Category;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductNewArrivals;
+import com.example.doan.Model.ShoeItem;
 import com.example.doan.R;
 import com.example.doan.Screens.ProductDetailActivity;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.doan.Screens.ProductDetailActivity1;
+import com.example.doan.SearchActivity;
+import com.example.doan.SeeAllShoesActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment extends Fragment {
 
-    private RecyclerView recyclerViewCategory;
+    private RecyclerView recyclerViewCategory, recyclerViewPopularShoes, recyclerViewProductNewArrivals;
     private CategoryAdapter categoryAdapter;
-    private List<Category> categoryList;
-
-    private RecyclerView recyclerViewProducts;
-    private ProductAdapter productAdapter;
-    private List<Product> productList;
-
-    private RecyclerView recyclerViewProductNewArrivals;
+    private ProductAdapter popularAdapter;
     private ProductNewArrivalsAdapter productNewArrivalsAdapter;
+
+    private Category currentCategory;
+    private List<Category> categoryList;
     private List<ProductNewArrivals> productNewArrivalsList;
 
-    private FirebaseFirestore db;
-    private int selectedPosition = -1;
-
-
+    private int currentIndex = 0;
+    private Handler autoScrollHandler;
+    private Runnable autoScrollRunnable;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         setupSearch(view);
-        setupProducts(view);
+        setupPopularShoes(view);
         setupCategory(view);
         setupProductNewArrivals(view);
         return view;
     }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        view.findViewById(R.id.txtSeeAll).setOnClickListener(v -> {
+            String selectedCategory = currentCategory != null ? currentCategory.getName() : "Nike";
+            Intent intent = new Intent(getActivity(), SeeAllShoesActivity.class);
+            intent.putExtra("category", selectedCategory);
+            startActivity(intent);
+        });
+
+        view.findViewById(R.id.txtSeeAll1).setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AllShoesByCategoryActivity.class);
+            intent.putExtra("category", "new_arrivals");
+            startActivity(intent);
+        });
+    }
+
     private void setupSearch(View view) {
         EditText searchEdt = view.findViewById(R.id.searchEdt);
-
+        searchEdt.setFocusable(false);
+        searchEdt.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), SearchActivity.class));
+        });
     }
 
     private void setupCategory(View view) {
         recyclerViewCategory = view.findViewById(R.id.recyclerViewCategory);
-        recyclerViewCategory.setHasFixedSize(true);
         recyclerViewCategory.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        // Danh sách danh mục
         categoryList = new ArrayList<>();
-        categoryAdapter = new CategoryAdapter(categoryList, new CategoryAdapter.OnCatagoryClickListener() {
-            @Override
-            public void onCategoryClick(Category category) {
-                loadProductsForCategory(category);
-            }
+        categoryList.add(new Category("Nike", R.drawable.ic_nike));
+        categoryList.add(new Category("Puma", R.drawable.ic_puma));
+        categoryList.add(new Category("Under Armour", R.drawable.ic_under));
+        categoryList.add(new Category("Adidas", R.drawable.ic_adidas));
+        categoryList.add(new Category("Converse", R.drawable.ic_converse));
+
+        categoryAdapter = new CategoryAdapter(categoryList, category -> {
+            currentCategory = category;
+            updatePopularShoesByCategory(category);
         });
         recyclerViewCategory.setAdapter(categoryAdapter);
 
-        db = FirebaseFirestore.getInstance();
-        db.collection("brands")
-                .whereEqualTo("status", true)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                   categoryList.clear();
-                   for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String id = doc.getId();
-                        String name = doc.getString("brand_name");
-                        String icon = doc.getString("logo");
-                        boolean status = doc.getBoolean("status") != null && doc.getBoolean("status");
-
-                       // Chỉ thêm nếu status là true (đã filter trên Firestore rồi)
-                       categoryList.add(new Category(id, name, icon, status));
-                   }
-
-                    // Tìm vị trí danh mục "Nike"
-                    int nikeIndex = 0;
-                    for (int i = 0; i < categoryList.size(); i++) {
-                        if (categoryList.get(i).getName().equalsIgnoreCase("Nike")) {
-                            nikeIndex = i;
-                            break;
-                        }
-                    }
-
-                    // Cập nhật vị trí đã chọn và gọi load
-                    categoryAdapter.setSelectedPosition(nikeIndex);
-                    categoryAdapter.notifyDataSetChanged();
-
-                    // Load sản phẩm của "Nike"
-                    if (!categoryList.isEmpty()) {
-                        loadProductsForCategory(categoryList.get(nikeIndex));
-                    }
-
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Lỗi khi tải danh mục", Toast.LENGTH_SHORT).show();
-                });
-
-
-    }
-
-    private void selectFirstCategory() {
-        if (categoryList != null && !categoryList.isEmpty()) {
-            selectedPosition = 0; // Chọn danh mục đầu tiên
-            categoryAdapter.notifyItemChanged(0);  // Làm nổi bật danh mục đầu tiên
+        if (!categoryList.isEmpty()) {
+            currentCategory = categoryList.get(0);
+            updatePopularShoesByCategory(currentCategory);
         }
     }
 
-    private void setupProducts(View view) {
-        recyclerViewProducts = view.findViewById(R.id.recyclerViewProduct);
-        recyclerViewProducts.setHasFixedSize(true);
-        recyclerViewProducts.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+    private void setupPopularShoes(View view) {
+        recyclerViewPopularShoes = view.findViewById(R.id.recyclerPopularShoes);
+        recyclerViewPopularShoes.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
     }
 
-    private void loadProductsForCategory(Category category) {
-        productList = new ArrayList<>();
-        db.collection("products")
-                .whereEqualTo("brand", category.getId())
-                .whereEqualTo("status", true)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    productList.clear();
+    private void setupProductNewArrivals(View view) {
+        recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
+        recyclerViewProductNewArrivals.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-                    for (DocumentSnapshot doc: queryDocumentSnapshots) {
-                        Product product = doc.toObject(Product.class);
-                        String productId = doc.getId();
-                        if (product != null) {
-                            product.setId(productId); // <-- Gán ID lấy từ Firestore vào đối tượng Product
-                            productList.add(product);
-                        }
+        productNewArrivalsList = new ArrayList<>();
+        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true, true, "A popular choice among sneaker enthusiasts."));
+        productNewArrivalsList.add(new ProductNewArrivals(2, "Nike Air Max 90", "$150.00", R.drawable.img, true, true, "Comfort and style combined in one sneaker."));
+        productNewArrivalsList.add(new ProductNewArrivals(7, "Nike Air Max 90", "$150.00", R.drawable.img1, true, true, "Affordable yet stylish."));
 
-                    }
+        productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList, product -> {
+            Intent intent = new Intent(getContext(), ProductDetailActivity1.class);
+            intent.putExtra("productNewArrivals", product);
+            startActivity(intent);
+        });
 
-                    productAdapter = new ProductAdapter(productList, new ProductAdapter.OnProductClickListener() {
-                        @Override
-                        public void onProductClick(Product product) {
-                            navigateToProductDetail(product);
-                        }
-                    });
+        recyclerViewProductNewArrivals.setAdapter(productNewArrivalsAdapter);
 
-                    recyclerViewProducts.setAdapter(productAdapter);
-                    productAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Lỗi khi tải sản phẩm", Toast.LENGTH_SHORT).show();
-                });
-
-
+        autoScrollHandler = new Handler();
+        autoScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (currentIndex >= productNewArrivalsList.size()) currentIndex = 0;
+                recyclerViewProductNewArrivals.smoothScrollToPosition(currentIndex++);
+                autoScrollHandler.postDelayed(this, 7000);
+            }
+        };
+        autoScrollHandler.postDelayed(autoScrollRunnable, 7000);
     }
 
-    // Phương thức chuyển sang màn hình chi tiết sản phẩm
+    private void updatePopularShoesByCategory(Category category) {
+        List<Product> filteredProducts = new ArrayList<>();
+
+        switch (category.getName()) {
+            case "Nike":
+                filteredProducts.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
+                filteredProducts.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_7, true));
+                filteredProducts.add(new Product(3, "Nike Air Max 90", "$150.00", R.drawable.img_1, true));
+                break;
+            case "Puma":
+                for (int i = 0; i < 5; i++)
+                    filteredProducts.add(new Product(6 + i, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+                break;
+            case "Under Armour":
+                filteredProducts.add(new Product(7, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
+                break;
+            case "Adidas":
+                filteredProducts.add(new Product(8, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
+                break;
+            case "Converse":
+                filteredProducts.add(new Product(9, "Converse All Star", "$100", R.drawable.ic_converse, true));
+                break;
+        }
+
+        List<Product> top4 = new ArrayList<>();
+        for (int i = 0; i < Math.min(3, filteredProducts.size()); i++) {
+            if (filteredProducts.get(i).isBestSeller()) {
+                top4.add(filteredProducts.get(i));
+            }
+        }
+        top4.add(new Product(-1, "SEE_ALL", "", R.drawable.ic_arrow_right, false));
+
+        popularAdapter = new ProductAdapter(top4, product -> {
+            if ("SEE_ALL".equals(product.getName())) {
+                Intent intent = new Intent(getActivity(), SeeAllShoesActivity.class);
+                intent.putExtra("category", category.getName());
+                startActivity(intent);
+            } else {
+                navigateToProductDetail(product);
+            }
+        });
+
+        recyclerViewPopularShoes.setAdapter(popularAdapter);
+        DataHolder.allShoes = getAllBestSellerShoes();
+    }
+
     private void navigateToProductDetail(Product product) {
         Intent intent = new Intent(getContext(), ProductDetailActivity.class);
         intent.putExtra("product", product);
         startActivity(intent);
     }
 
-    private void setupProductNewArrivals(View view) {
-        recyclerViewProductNewArrivals = view.findViewById(R.id.recyclerViewProductNewArrivals);
-        recyclerViewProductNewArrivals.setHasFixedSize(true);
-        recyclerViewProductNewArrivals.setLayoutManager(new GridLayoutManager(getContext(), 1));
+    private ArrayList<ShoeItem> getAllBestSellerShoes() {
+        ArrayList<ShoeItem> result = new ArrayList<>();
 
-        productNewArrivalsList = new ArrayList<>();
-        productNewArrivalsList.add(new ProductNewArrivals(1, "Nike Jordan", "$493.00", R.drawable.img_1, true));
+        if (categoryList == null) return result;
 
-        productNewArrivalsAdapter = new ProductNewArrivalsAdapter(productNewArrivalsList);
-        recyclerViewProductNewArrivals.setAdapter(productNewArrivalsAdapter);
-        productNewArrivalsAdapter.notifyDataSetChanged();
+        for (Category cat : categoryList) {
+            List<Product> temp = new ArrayList<>();
+            switch (cat.getName()) {
+                case "Nike":
+                    temp.add(new Product(1, "Nike Jordan", "$493.00", R.drawable.img, true));
+                    temp.add(new Product(2, "Nike Revolution", "$120", R.drawable.img_1, true));
+                    break;
+                case "Puma":
+                    temp.add(new Product(5, "Puma RS-X", "$130", R.drawable.ic_puma, true));
+                    break;
+                case "Under Armour":
+                    temp.add(new Product(6, "Under Armour HOVR", "$140", R.drawable.ic_under, true));
+                    break;
+                case "Adidas":
+                    temp.add(new Product(7, "Adidas Ultra Boost", "$160", R.drawable.ic_adidas, true));
+                    break;
+                case "Converse":
+                    temp.add(new Product(8, "Converse All Star", "$100", R.drawable.ic_converse, true));
+                    break;
+            }
+
+            for (Product p : temp) {
+                if (p.isBestSeller()) {
+                    result.add(new ShoeItem(
+                            p.getImageResId(),
+                            p.getName(),
+                            cat.getName(),
+                            Double.parseDouble(p.getPrice().replace("$", "")),
+                            new int[]{Color.BLACK, Color.GRAY},
+                            true
+                    ));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (autoScrollHandler != null && autoScrollRunnable != null) {
+            autoScrollHandler.removeCallbacks(autoScrollRunnable);
+        }
     }
 }
