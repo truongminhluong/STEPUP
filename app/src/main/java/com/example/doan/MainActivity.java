@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -27,10 +28,14 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.bumptech.glide.Glide;
+import com.example.doan.Auth.SignInActivity;
 import com.example.doan.Screens.MyCartActivity;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -76,23 +81,23 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout signOutLayout = findViewById(R.id.sign_out_container);
         signOutLayout.setOnClickListener(v -> {
             new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Xác nhận")
-                .setMessage("Bạn có chắc chắn muốn đăng xuất không?")
-                .setPositiveButton("Đăng xuất", (dialog, which) -> {
-                    // Đăng xuất Firebase
-                    FirebaseAuth.getInstance().signOut();
-        
-                    // Đăng xuất Google nếu có dùng
-                    GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut();
-        
-                    // Chuyển về màn hình đăng nhập và xóa lịch sử stack
-                    Intent intent = new Intent(MainActivity.this, SignInActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+                    .setTitle("Xác nhận")
+                    .setMessage("Bạn có chắc chắn muốn đăng xuất không?")
+                    .setPositiveButton("Đăng xuất", (dialog, which) -> {
+                        // Đăng xuất Firebase
+                        FirebaseAuth.getInstance().signOut();
+
+                        // Đăng xuất Google nếu có dùng
+                        GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut();
+
+                        // Chuyển về màn hình đăng nhập và xóa lịch sử stack
+                        Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
         });
 
 
