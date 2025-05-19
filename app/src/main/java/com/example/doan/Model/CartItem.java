@@ -1,33 +1,21 @@
 package com.example.doan.Model;
 
-import java.io.Serializable;
-
-public class CartItem implements Serializable {
-
+public class CartItem {
     private String id;
     private String name;
-    private String price; // ✅ sửa từ int → String
-    private int imageRes;
+    private int price;
+    private String image;
     private int quantity;
 
-    public CartItem(String id, String name, String price, int imageRes, int quantity) {
+    public CartItem() {}
+
+    public CartItem(String id, String name, int price, String image, int quantity) {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.imageRes = imageRes;
+        this.image = image;
         this.quantity = quantity;
     }
-
-    // Getter và Setter mới
-    public String getPrice() {
-        return price;
-    }
-
-    public void setPrice(String price) {
-        this.price = price;
-    }
-
-    // Các getter & setter khác vẫn giữ nguyên...
 
     public String getId() {
         return id;
@@ -45,12 +33,20 @@ public class CartItem implements Serializable {
         this.name = name;
     }
 
-    public int getImageRes() {
-        return imageRes;
+    public int getPrice() {
+        return price;
     }
 
-    public void setImageRes(int imageRes) {
-        this.imageRes = imageRes;
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public int getQuantity() {

@@ -1,7 +1,11 @@
 package com.example.doan.Adapter;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,17 +18,32 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Model.Product;
 import com.example.doan.R;
 import com.example.doan.Screens.ProductDetailActivity;
+import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
 
     private final Context context;
-    private final List<Product> products;
+    private final ArrayList<Product> products = new ArrayList<>();
+    private final SharedPreferences sharedPreferences;
 
-    public SearchAdapter(Context context, List<Product> products) {
+    private boolean isFirstTime = true;
+
+    public void setFirstTime(boolean firstTime) {
+        isFirstTime = firstTime;
+    }
+
+    public void updateData(List<Product> data) {
+        products.clear();
+        products.addAll(data);
+        notifyDataSetChanged();
+    }
+
+    public SearchAdapter(Context context, SharedPreferences sharedPreferences) {
         this.context = context;
-        this.products = products;
+        this.sharedPreferences = sharedPreferences;
     }
 
     @NonNull
@@ -38,11 +57,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
         Product product = products.get(position);
         holder.tvText.setText(product.getName());
-        holder.ivIcon.setImageResource(R.drawable.ic_history);
-
+        if (isFirstTime){
+            holder.ivIcon.setVisibility(VISIBLE);
+        }else {
+            holder.ivIcon.setVisibility(GONE);
+        }
         holder.itemView.setOnClickListener(v -> {
+            if (product.getId() == null) {
+                return;
+            }
             Intent intent = new Intent(context, ProductDetailActivity.class);
             intent.putExtra("product", product); // Truyền nguyên object Product
+            sharedPreferences.edit().putString("search", new Gson().toJson(products)).apply();
             context.startActivity(intent);
         });
     }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class AccountSettingsActivity extends AppCompatActivity {

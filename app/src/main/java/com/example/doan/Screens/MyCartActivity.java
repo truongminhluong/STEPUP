@@ -43,6 +43,7 @@ public class MyCartActivity extends AppCompatActivity {
         loadCartData();
     }
 
+
     private void initViews() {
         mycartToolbar = findViewById(R.id.mycartToolbar);
         recyclerViewMyCart = findViewById(R.id.recyclerViewMyCart);
@@ -53,7 +54,8 @@ public class MyCartActivity extends AppCompatActivity {
         setSupportActionBar(mycartToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
+            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
             actionBar.setTitle("My Cart");
         }
     }
@@ -61,21 +63,24 @@ public class MyCartActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         finish();
-        return true;
+        return super.onSupportNavigateUp();
     }
 
     private void loadCartData() {
         Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("product_name")) {
-            String name = intent.getStringExtra("product_name");
-            String priceStr = intent.getStringExtra("product_price");
-            int imageRes = intent.getIntExtra("product_image", R.drawable.img_1);
+        if (intent != null && intent.hasExtra("productId")) {
+            String id = intent.getStringExtra("productId");
+            String name = intent.getStringExtra("productName");
+            int price = intent.getIntExtra("productPrice", 0);
+            String imageBase64 = intent.getStringExtra("productImage");
+            int quantity = intent.getIntExtra("productQuantity", 1);
 
-            // Thêm sản phẩm vào danh sách giỏ hàng
-            cartItemList.add(new CartItem("0", name, priceStr, imageRes, 1));
+            // Tạo CartItem từ dữ liệu nhận được
+            CartItem cartItem = new CartItem(id, name, price, imageBase64, quantity);
+            cartItemList.add(cartItem);
         }
 
-        // Khởi tạo adapter và gán cho RecyclerView
+        // Khởi tạo adapter và gán vào RecyclerView
         myCartAdapter = new MyCartAdapter(cartItemList);
         recyclerViewMyCart.setAdapter(myCartAdapter);
     }

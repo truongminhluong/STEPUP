@@ -27,7 +27,7 @@ public class ProductDetailActivity1 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_product_detail1);
+        setContentView(R.layout.activity_product_detail);
 
         initViews();
         setupToolbar();
@@ -36,12 +36,12 @@ public class ProductDetailActivity1 extends AppCompatActivity {
 
     // Ánh xạ các view
     private void initViews() {
-        detailToolbar = findViewById(R.id.toolbar);
+        detailToolbar = findViewById(R.id.detailToolbar);
         imgProduct = findViewById(R.id.imgProduct);
         txtName = findViewById(R.id.txtProductName);
-        txtPrice = findViewById(R.id.txtProductPrice);
-        txtDescription = findViewById(R.id.txtProductDescription);
-        txtPDBestChoice = findViewById(R.id.txtPDBestChoice); // Ánh xạ cho TextView Best Choice
+        txtPrice = findViewById(R.id.tvPDPrice);
+        txtDescription = findViewById(R.id.tvPDlDescription);
+        txtPDBestChoice = findViewById(R.id.txtPDBestSeller); // Ánh xạ cho TextView Best Choice
         btnAddToCart = findViewById(R.id.btnAddToCart);
     }
 
@@ -67,8 +67,8 @@ public class ProductDetailActivity1 extends AppCompatActivity {
                 // Hiển thị thông tin sản phẩm
                 txtName.setText(productNewArrivals.getName());
                 txtPrice.setText(productNewArrivals.getPrice());
-                txtDescription.setText(productNewArrivals.getDescription());
-                imgProduct.setImageResource(productNewArrivals.getImageResource());
+//                txtDescription.setText(productNewArrivals.getDescription());
+//                imgProduct.setImageResource(productNewArrivals.getImageResource());
                 txtPDBestChoice.setText(productNewArrivals.isBestChoice() ? "Best Choice" : "");
 
                 // Xử lý sự kiện click nút thêm vào giỏ hàng
@@ -76,7 +76,7 @@ public class ProductDetailActivity1 extends AppCompatActivity {
                     Intent cartIntent = new Intent(ProductDetailActivity1.this, MyCartActivity.class);
                     cartIntent.putExtra("product_name", productNewArrivals.getName());
                     cartIntent.putExtra("product_price", productNewArrivals.getPrice());
-                    cartIntent.putExtra("product_image", productNewArrivals.getImageResource());
+//                    cartIntent.putExtra("product_image", productNewArrivals.getImageResource());
                     startActivity(cartIntent);
                 });
             }
