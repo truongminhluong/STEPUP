@@ -17,16 +17,38 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Model.CartItem;
 import com.example.doan.R;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHolder> {
-    // Danh sách sản phẩm trong giỏ hàng
-    private List<CartItem> cartItemList;
 
-    // Constructor nhận danh sách sản phẩm trong giỏ hàng
+    public interface OnDeleteClickListener {
+        void onDeleteClick(CartItem cartItem, int position);
+    }
+
+    public interface OnQuantityChangeListener {
+        void onIncrease(CartItem cartItem, int position);
+        void onDecrease(CartItem cartItem, int position);
+    }
+
+    private List<CartItem> cartItemList;
+    private OnDeleteClickListener deleteClickListener;
+    private OnQuantityChangeListener quantityChangeListener;
+
+    public MyCartAdapter(List<CartItem> cartItemList,
+                         OnDeleteClickListener deleteClickListener,
+                         OnQuantityChangeListener quantityChangeListener) {
+        this.cartItemList = cartItemList;
+        this.deleteClickListener = deleteClickListener;
+        this.quantityChangeListener = quantityChangeListener;
+    }
+
     public MyCartAdapter(List<CartItem> cartItemList) {
         this.cartItemList = cartItemList;
     }
+
+
 
     @NonNull
     @Override
@@ -49,33 +71,62 @@ public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHo
 
     // ViewHolder chứa các view của item sản phẩm trong giỏ hàng
     public class CartViewHolder extends RecyclerView.ViewHolder {
-        private ImageView imgCartProduct;
-        private TextView txtCartProductName, txtCartProductPrice, txtCartProductQuantity;
+        private ImageView imgCartProduct, imgDeleteCartProduct, imgCartProductMinus, imgCartProductPlus;
+        private TextView txtCartProductName, txtCartProductPrice, txtCartProductQuantity,txtCartProductSize;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
 
             imgCartProduct = itemView.findViewById(R.id.imgCartProduct);
+            imgDeleteCartProduct = itemView.findViewById(R.id.imgDeleteCartProduct);
             txtCartProductName = itemView.findViewById(R.id.txtCartProductName);
             txtCartProductPrice = itemView.findViewById(R.id.txtCartProductPrice);
             txtCartProductQuantity = itemView.findViewById(R.id.txtCartProductQuantity);
+            txtCartProductSize = itemView.findViewById(R.id.txtCartProductSize);
+            imgCartProductMinus = itemView.findViewById(R.id.imgCartProductMinus);
+            imgCartProductPlus = itemView.findViewById(R.id.imgCartProductPlus);
         }
 
         public void bind(CartItem cartItem) {
-            txtCartProductName.setText(cartItem.getName());
-            txtCartProductPrice.setText(String.valueOf(cartItem.getPrice()));
+            txtCartProductName.setText(cartItem.getProductName());
+
+            NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+            txtCartProductPrice.setText(formatter.format(cartItem.getPrice()));
+
             txtCartProductQuantity.setText(String.valueOf(cartItem.getQuantity()));
-            Bitmap bitmap = decodeBase64ToBitmap(cartItem.getImage(), itemView.getContext()); // Truyền Context vào đây
+            txtCartProductSize.setText(cartItem.getSize());
+
+            Bitmap bitmap = decodeBase64ToBitmap(cartItem.getImageUrl(), itemView.getContext()); // Truyền Context vào đây
             imgCartProduct.setImageBitmap(bitmap);
+
+            imgDeleteCartProduct.setOnClickListener(v -> {
+                if (deleteClickListener != null) {
+                    deleteClickListener.onDeleteClick(cartItem, getAdapterPosition());
+                }
+            });
+
+            imgCartProductMinus.setOnClickListener(v -> {
+                if (quantityChangeListener != null) {
+                    quantityChangeListener.onDecrease(cartItem, getAdapterPosition());
+                }
+            });
+
+            imgCartProductPlus.setOnClickListener(v -> {
+                if (quantityChangeListener != null) {
+                    quantityChangeListener.onIncrease(cartItem, getAdapterPosition());
+                }
+            });
+
+
         }
     }
 
     public Bitmap decodeBase64ToBitmap(String base64Str, Context context) {
-        Log.d("Base64String", base64Str);
+//        Log.d("Base64String", base64Str);
 
         // Kiểm tra chuỗi Base64 hợp lệ
         if (base64Str == null || base64Str.trim().isEmpty()) {
-            Log.e("Base64Error", "Chuỗi Base64 không hợp lệ");
+//            Log.e("Base64Error", "Chuỗi Base64 không hợp lệ");
             return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
         }
 
@@ -87,16 +138,16 @@ public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHo
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
 
             if (bitmap == null) {
-                Log.e("Base64Error", "Không thể giải mã Base64 thành Bitmap");
+//                Log.e("Base64Error", "Không thể giải mã Base64 thành Bitmap");
                 return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
             }
 
             return bitmap;
         } catch (IllegalArgumentException e) {
-            Log.e("Base64Error", "Lỗi khi giải mã Base64", e);
+//            Log.e("Base64Error", "Lỗi khi giải mã Base64", e);
             return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
         } catch (Exception e) {
-            Log.e("Base64Error", "Lỗi không xác định", e);
+//            Log.e("Base64Error", "Lỗi không xác định", e);
             return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
         }
     }

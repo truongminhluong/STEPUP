@@ -23,7 +23,11 @@ import com.example.doan.MainActivity;
 import com.example.doan.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -168,9 +172,35 @@ public class SignUpActivity extends AppCompatActivity {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Đăng ký thành công! ", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, MainActivity.class));
-                        finish();
+                        // Lấy UID của người dùng mới
+                        String userId = auth.getCurrentUser().getUid();
+
+                        // Lấy thông tin từ các ô input
+                        String name = edtName.getText().toString().trim();
+                        String phone = edtPhone.getText().toString().trim();
+
+                        // Tạo dữ liệu để lưu vào Firestore
+                        Map<String, Object> userData = new HashMap<>();
+                        userData.put("name", name);
+                        userData.put("email", email);
+                        userData.put("phone", phone);
+                        userData.put("created_at", FieldValue.serverTimestamp());
+
+                        // Ghi vào Firestore (ví dụ collection là "users")
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        db.collection("users").document(userId)
+                                .set(userData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                                    // Điều hướng sang MainActivity
+                                    Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("FIRESTORE", "Lỗi khi ghi dữ liệu", e);
+                                    Toast.makeText(this, "Không thể lưu thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                });
                     } else {
                         String errorMessage;
                         if (task.getException() instanceof FirebaseAuthUserCollisionException) {
@@ -180,9 +210,10 @@ public class SignUpActivity extends AppCompatActivity {
                             errorMessage = "Đăng ký thất bại: " + task.getException().getMessage();
                         }
 
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show(); // HIỂN THỊ TOAST
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 
 }

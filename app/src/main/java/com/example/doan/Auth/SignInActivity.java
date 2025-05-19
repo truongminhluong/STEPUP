@@ -70,7 +70,8 @@ public class SignInActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
-            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
+            getSupportActionBar().setHomeButtonEnabled(true);// Kích hoạt nút back
+            actionBar.setTitle("");
         }
     }
 

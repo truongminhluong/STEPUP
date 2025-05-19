@@ -32,14 +32,20 @@ import com.example.doan.Adapter.ProductVariantSizeAdapter;
 import com.example.doan.Model.Product;
 import com.example.doan.Model.ProductVariant;
 import com.example.doan.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public class ProductDetailActivity extends AppCompatActivity {
@@ -150,29 +156,135 @@ public class ProductDetailActivity extends AppCompatActivity {
                     return;
                 }
 
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                String userId = currentUser.getUid();
                 ProductVariant selectedColorVariant = productVariantColorList.get(selectedColorIndex);
                 ProductVariant selectedSizeVariant = productVariantSizeList.get(selectedSizeIndex);
 
-                // TODO: Thêm vào giỏ hàng với thông tin: product, selectedColorVariant, selectedSizeVariant
                 Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
-
+                addToCart(userId, product, selectedColorVariant.getColor(), selectedSizeVariant.getSize());
 
             }
         });
+
+
         //màu
         productVariantColorAdapter.setOnColorSelectedListener((variant, position) -> {
             selectedColorIndex = position;
             Bitmap bitmap = decodeBase64ToBitmap(variant.getImage_url(), ProductDetailActivity.this);
             ivProductDetailImage.setImageBitmap(bitmap);
+            updatePriceForSelectedVariant();
         });
         //size
         productVariantSizeAdapter.setOnSizeSelectedListener((variant, position) -> {
             selectedSizeIndex = position;
-            Toast.makeText(ProductDetailActivity.this, "Đã chọn size: " + variant.getSize(), Toast.LENGTH_SHORT).show();
+            updatePriceForSelectedVariant();
         });
 
 
     }
+
+    private void addToCart(String userId, Product product, String selectedColor, String selectedSize) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("product_variants")
+                .whereEqualTo("product_id", product.getId())
+                .whereEqualTo("color", selectedColor)
+                .whereEqualTo("size", selectedSize)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot variantDoc = queryDocumentSnapshots.getDocuments().get(0);
+                        ProductVariant matchedVariant = variantDoc.toObject(ProductVariant.class);
+                        String variantId = variantDoc.getId();
+
+                        // Kiểm tra xem đã có sản phẩm này trong giỏ hàng chưa
+                        db.collection("cart")
+                                .whereEqualTo("user_id", userId)
+                                .whereEqualTo("product_variant_id", variantId)
+                                .get()
+                                .addOnSuccessListener(cartQuery -> {
+                                    if (!cartQuery.isEmpty()) {
+                                        // Cập nhật quantity
+                                        DocumentSnapshot cartDoc = cartQuery.getDocuments().get(0);
+                                        DocumentReference cartRef = cartDoc.getReference();
+                                        long currentQuantity = cartDoc.getLong("quantity") != null ? cartDoc.getLong("quantity") : 0;
+                                        cartRef.update("quantity", currentQuantity + 1)
+                                                .addOnSuccessListener(unused -> {
+                                                    Toast.makeText(this, "Cập nhật số lượng giỏ hàng thành công", Toast.LENGTH_SHORT).show();
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(this, "Lỗi khi cập nhật giỏ hàng", Toast.LENGTH_SHORT).show();
+                                                });
+                                    } else {
+                                        // Thêm mới sản phẩm vào giỏ hàng
+                                        Map<String, Object> cartItem = new HashMap<>();
+                                        cartItem.put("user_id", userId);
+                                        cartItem.put("product_id", product.getId());
+                                        cartItem.put("product_variant_id", variantId);
+                                        cartItem.put("product_name", product.getName());
+                                        cartItem.put("product_image", productVariantColorList.get(selectedColorIndex).getImage_url());
+                                        cartItem.put("size", selectedSize);
+                                        cartItem.put("quantity", 1);
+                                        cartItem.put("price", matchedVariant.getPrice());
+
+                                        db.collection("cart")
+                                                .add(cartItem)
+                                                .addOnSuccessListener(documentReference -> {
+                                                    Toast.makeText(this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                                                    Intent intent = new Intent(this, MyCartActivity.class);
+                                                    startActivity(intent);
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(this, "Lỗi khi thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+                                                });
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Lỗi khi kiểm tra giỏ hàng", Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Toast.makeText(this, "Không tìm thấy biến thể phù hợp", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi khi tìm biến thể sản phẩm", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+    private void updatePriceForSelectedVariant() {
+        if (selectedColorIndex != -1 && selectedSizeIndex != -1) {
+            ProductVariant selectedColorVariant = productVariantColorList.get(selectedColorIndex);
+            ProductVariant selectedSizeVariant = productVariantSizeList.get(selectedSizeIndex);
+
+            String selectedColor = selectedColorVariant.getColor();
+            String selectedSize = selectedSizeVariant.getSize();
+
+            // Tìm variant phù hợp
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("product_variants")
+                    .whereEqualTo("product_id", product.getId())
+                    .whereEqualTo("color", selectedColor)
+                    .whereEqualTo("size", selectedSize)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            ProductVariant matchedVariant = queryDocumentSnapshots.getDocuments().get(0).toObject(ProductVariant.class);
+
+                            // Cập nhật giá
+                            NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+                            String formattedPrice = formatter.format(matchedVariant.getPrice());
+                            tvProductDetailPrice.setText(formattedPrice);
+                            tvProductDetailValue.setText(formattedPrice);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("PriceUpdate", "Không tìm thấy biến thể phù hợp", e);
+                    });
+        }
+    }
+
 
 
     private boolean isNumeric(String str) {
@@ -211,11 +323,13 @@ public class ProductDetailActivity extends AppCompatActivity {
 
 
                 loadProductVariants(product.getId());
+
             }
 
 
         }
     }
+
 
     private void loadProductVariants(String productId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
