@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "892966570000",
+    "project_id": "quanlybangiay-d9ee8",
+    "storage_bucket": "quanlybangiay-d9ee8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:892966570000:android:350c43347ce0dc3e702295",
+        "android_client_info": {
+          "package_name": "com.example.doan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "892966570000-025rems2vn06hltdco2nof9r65epe9tg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.doan",
+            "certificate_hash": "db9f10b1d0ee16be146fe9d549e51771adc04c41"
+          }
+        },
+        {
+          "client_id": "892966570000-vklm3q2jb4cbhgc3k1ltu9tscq0in4bl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.doan",
+            "certificate_hash": "372a947991a92ee09a0c4d5dcda5d69668290d9e"
+          }
+        },
+        {
+          "client_id": "892966570000-bcbokj0e3pnpjj6of58qhpoj2s9b727m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv7JmmGxr_fHDe18soAIVAtWb-7BZ9Qv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "892966570000-bcbokj0e3pnpjj6of58qhpoj2s9b727m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

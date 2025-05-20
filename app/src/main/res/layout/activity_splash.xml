@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/mancho">
+
+    <!-- Khối chứa icon và dòng loading -->
+    <LinearLayout
+        android:id="@+id/loading_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.774">
+
+        <!-- Icon load xoay -->
+        <ImageView
+            android:id="@+id/loading_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_loading" />
+
+        <!-- Dòng loading từng chữ nhảy -->
+        <LinearLayout
+            android:id="@+id/letter_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/char1"
+                style="@style/LoadingChar"
+                android:text="L" />
+
+            <TextView
+                android:id="@+id/char2"
+                style="@style/LoadingChar"
+                android:text="o" />
+
+            <TextView
+                android:id="@+id/char3"
+                style="@style/LoadingChar"
+                android:text="a" />
+
+            <TextView
+                android:id="@+id/char4"
+                style="@style/LoadingChar"
+                android:text="d" />
+
+            <TextView
+                android:id="@+id/char5"
+                style="@style/LoadingChar"
+                android:text="i" />
+
+            <TextView
+                android:id="@+id/char6"
+                style="@style/LoadingChar"
+                android:text="n" />
+
+            <TextView
+                android:id="@+id/char7"
+                style="@style/LoadingChar"
+                android:text="g" />
+
+            <TextView
+                android:id="@+id/char8"
+                style="@style/LoadingChar"
+                android:text="." />
+
+            <TextView
+                android:id="@+id/char9"
+                style="@style/LoadingChar"
+                android:text="." />
+
+            <TextView
+                android:id="@+id/char10"
+                style="@style/LoadingChar"
+                android:text="." />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

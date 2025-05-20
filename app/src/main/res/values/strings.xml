@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">STEPUP</string>
+    <string name="shoe_image">Shoe Image</string>
+    <string name="favorite_icon">Favorite Icon</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_yellow">Yellow</string>
+    <!-- res/values/strings.xml -->
+    <string name="add_to_cart">Add to cart</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="and">Smart, Gorgeous &amp; Fashionable\nCollection</string>
+    <string name="default_web_client_id">892966570000-025rems2vn06hltdco2nof9r65epe9tg.apps.googleusercontent.com</string>
+</resources>

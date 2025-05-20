@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    android:background="@android:color/white">
+
+    <!-- Shoe image -->
+    <ImageView
+        android:src="@drawable/three"
+        android:layout_width="800dp"
+        android:layout_height="350dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="65dp" />
+
+    <!-- Title -->
+    <TextView
+        android:text="Summer Shoes\nNike 2022"
+        android:textSize="50sp"
+        android:textStyle="bold"
+        android:textColor="#1E1E1E"
+        android:layout_marginTop="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Subtitle -->
+    <TextView
+        android:text="Amet Minim Lit Nodeseru Saku Nandu sit Alique Dolor"
+        android:textSize="26sp"
+        android:textColor="#7E7E7E"
+        android:layout_marginTop="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
