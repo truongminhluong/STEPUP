@@ -164,7 +164,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
             if (checkbox_cod.isChecked()) {
                 placeOrder("COD");
             } else if (checkbox_momo.isChecked()) {
-                placeOrder("MOMO");
+                Toast.makeText(this, "okok", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
             }

@@ -146,9 +146,22 @@ public class MyCartActivity extends AppCompatActivity {
                     }, new MyCartAdapter.OnQuantityChangeListener() {
                         @Override
                         public void onIncrease(CartItem cartItem, int position) {
-                            String documentId = queryDocumentSnapshots.getDocuments().get(position).getId();
-                            int newQuantity = cartItem.getQuantity() + 1;
-                            updateCartItemQuantity(documentId, newQuantity, position);
+                            FirebaseFirestore.getInstance()
+                                    .collection("product_variants")
+                                    .document(cartItem.getVariant_id())
+                                    .get()
+                                    .addOnSuccessListener(variantDoc -> {
+                                        int stockQuantity = variantDoc.getLong("quantity").intValue(); // Giả sử là field này
+
+                                        int currentQuantity = cartItem.getQuantity();
+                                        if (currentQuantity < stockQuantity) {
+                                            int newQuantity = currentQuantity + 1;
+                                            String documentId = queryDocumentSnapshots.getDocuments().get(position).getId();
+                                            updateCartItemQuantity(documentId, newQuantity, position);
+                                        } else {
+                                            Toast.makeText(MyCartActivity.this, "Số lượng đã đạt giới hạn trong kho", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                         }
 
                         @Override
