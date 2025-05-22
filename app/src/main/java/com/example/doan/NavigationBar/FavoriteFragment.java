@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.example.doan.Adapter.FavoriteAdapter;
 import com.example.doan.Model.FavoriteItem;
 import com.example.doan.R;

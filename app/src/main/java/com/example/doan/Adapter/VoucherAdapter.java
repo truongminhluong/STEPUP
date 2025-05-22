@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherViewHolder> {
 
     private List<Voucher> vouchers;
-    private int selectedPosition = -1; // lưu vị trí voucher được chọn
+    private int selectedPosition = -1;
 
     public VoucherAdapter(List<Voucher> vouchers) {
         this.vouchers = vouchers;
@@ -34,8 +35,14 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
         Voucher voucher = vouchers.get(position);
         holder.txtTitle.setText(voucher.getTitle());
         holder.txtDetail.setText(voucher.getDetail());
+        holder.txtDetail1.setText("HSD: " + voucher.getExpiryDate());
 
-        // Nếu là voucher đã dùng, hiển thị mờ và disable
+        if (position == selectedPosition) {
+            holder.itemView.setBackgroundResource(R.drawable.voucher_selected_bg);
+        } else {
+            holder.itemView.setBackgroundResource(R.drawable.voucher_default_bg);
+        }
+
         if (voucher.isUsed()) {
             holder.itemView.setAlpha(0.4f);
             holder.checkBox.setEnabled(false);
@@ -46,18 +53,13 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
             holder.checkBox.setChecked(position == selectedPosition);
         }
 
-        // Bắt sự kiện khi người dùng chọn checkbox
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!voucher.isUsed()) {
-                    selectedPosition = holder.getAdapterPosition();
-                    notifyDataSetChanged();
-                }
+        holder.itemView.setOnClickListener(v -> {
+            if (!voucher.isUsed()) {
+                selectedPosition = holder.getAdapterPosition();
+                notifyDataSetChanged();
             }
         });
 
-        // Ngăn người dùng trực tiếp click vào checkbox (chỉ dùng click vào itemView)
         holder.checkBox.setOnClickListener(v -> {
             if (!voucher.isUsed()) {
                 selectedPosition = holder.getAdapterPosition();
@@ -71,7 +73,6 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
         return vouchers.size();
     }
 
-    // Trả về voucher đã được chọn
     public Voucher getSelectedVoucher() {
         if (selectedPosition >= 0 && selectedPosition < vouchers.size()) {
             return vouchers.get(selectedPosition);
@@ -80,13 +81,14 @@ public class VoucherAdapter extends RecyclerView.Adapter<VoucherAdapter.VoucherV
     }
 
     public static class VoucherViewHolder extends RecyclerView.ViewHolder {
-        TextView txtTitle, txtDetail;
+        TextView txtTitle, txtDetail, txtDetail1;
         CheckBox checkBox;
 
         public VoucherViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txttitlee);
             txtDetail = itemView.findViewById(R.id.txtDetaill);
+            txtDetail1 = itemView.findViewById(R.id.txtDetaill1);
             checkBox = itemView.findViewById(R.id.checkbox);
         }
     }
