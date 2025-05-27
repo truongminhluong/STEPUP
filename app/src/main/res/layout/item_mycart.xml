@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="#F8F9FA"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:layout_marginTop="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imgCartProduct"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/custom_product_detail"
+            android:src="@drawable/img_7" />
+
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtCartProductName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nike Club Max"
+                android:textColor="@color/black"
+                android:textSize="18dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtCartProductPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="$1250.00"
+                android:textColor="@color/black"
+                android:textSize="18dp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imgCartProductMinus"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:backgroundTint="@null"
+                    android:src="@drawable/img_4" />
+
+                <TextView
+                    android:id="@+id/txtCartProductQuantity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:text="1"
+                    android:textColor="@color/black"
+                    android:textSize="18dp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/imgCartProductPlus"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:backgroundTint="@null"
+                    android:src="@drawable/img_5" />
+
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtCartProductSize"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text="40"
+                android:textColor="@color/black"
+                android:textSize="18dp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/imgDeleteCartProduct"
+                android:layout_width="20dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:backgroundTint="@null"
+                android:src="@drawable/img_6" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
