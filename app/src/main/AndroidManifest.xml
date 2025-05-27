@@ -22,11 +22,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBKSIF64u1FBEjpI0HxVSvc3BvYChbe0nE" />
 
-<!--        <activity android:name="com.momo.momo_partner.AppMoMoLibActivity" />-->
-<!--        <intent-filter>-->
-<!--            <data android:scheme="momo4u20220120" /> &lt;!&ndash; dùng appScheme từ MoMo &ndash;&gt;-->
-<!--        </intent-filter>-->
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -36,6 +31,22 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".Screens.VnpayResultActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="doanapp"
+                    android:host="vnpay" />
             </intent-filter>
         </activity>
 
@@ -50,7 +61,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Auth.SignUpActivity"
             android:exported="true"
@@ -62,9 +72,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
-
         <activity
             android:name=".Screens.AddressActivity"
             android:exported="true"
@@ -76,14 +83,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
-
         <activity
             android:name=".Screens.ProductDetailActivity"
             android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
             android:name=".Screens.MyCartActivity"
             android:exported="true"
@@ -95,7 +98,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Screens.PaymentActivity"
             android:exported="true"
@@ -107,8 +109,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
     </application>
 
 </manifest>

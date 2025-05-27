@@ -161,7 +161,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 ProductVariant selectedColorVariant = productVariantColorList.get(selectedColorIndex);
                 ProductVariant selectedSizeVariant = productVariantSizeList.get(selectedSizeIndex);
 
-                Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(ProductDetailActivity.this, "Đã thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                 addToCart(userId, product, selectedColorVariant.getColor(), selectedSizeVariant.getSize());
 
             }
@@ -244,7 +244,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                                     Toast.makeText(this, "Lỗi khi kiểm tra giỏ hàng", Toast.LENGTH_SHORT).show();
                                 });
                     } else {
-                        Toast.makeText(this, "Không tìm thấy biến thể phù hợp", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
