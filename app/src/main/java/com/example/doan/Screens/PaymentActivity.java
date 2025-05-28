@@ -1,6 +1,9 @@
 package com.example.doan.Screens;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -8,6 +11,9 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,12 +32,19 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.doan.MainActivity;
 import com.example.doan.Model.CartItem;
+import com.example.doan.NavigationBar.HomeFragment;
 import com.example.doan.R;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -52,11 +65,30 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeMap;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Activity cho màn hình thanh toán, bao gồm bản đồ để chọn địa chỉ giao hàng.
@@ -74,6 +106,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     private Toolbar paymentToolbar;
     private CheckBox checkbox_cod, checkbox_momo;
     private Button btnMyCart;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +123,10 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
 
         initViews();
         setupToolbar();
-        setListeners();
         loadUser();
+        setListeners();
         loadCartAndCalculateTotal();
+        setupNotification();
     }
 
     private void initViews() {
@@ -113,6 +147,16 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         checkbox_cod = findViewById(R.id.checkbox_cod);
         checkbox_momo = findViewById(R.id.checkbox_momo);
         btnMyCart = findViewById(R.id.btnMyCart);
+    }
+
+    private void setupNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 200);
+            }
+        }
     }
 
     // Thiết lập Toolbar
@@ -161,12 +205,141 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
             if (checkbox_cod.isChecked()) {
                 placeOrder("COD");
             } else if (checkbox_momo.isChecked()) {
-                Toast.makeText(this, "okok", Toast.LENGTH_SHORT).show();
+                createVnpayPayment();
             } else {
                 Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
+    private void createVnpayPayment() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String address = tvDiachi.getText().toString();
+        String phone = tvPhone.getText().toString();
+        String email = tvEmail.getText().toString();
+        List<CartItem> cartItems = (List<CartItem>) getIntent().getSerializableExtra("cartItems");
+        double totalPrice = getIntent().getDoubleExtra("totalPrice", 0.0);
+
+        if (address.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tạo order tạm thời trong Firestore để lấy orderId
+        Map<String, Object> order = new HashMap<>();
+        order.put("userId", userId);
+        order.put("address", address);
+        order.put("customerName", userName);
+        order.put("phone", phone);
+        order.put("email", email);
+        order.put("paymentMethod", "VNPay");
+        order.put("totalPrice", totalPrice);
+        order.put("status", "Chờ thanh toán");
+        String isoDateTime = Instant.now().toString();
+        order.put("createdAt", isoDateTime);
+        order.put("items", cartItems);
+
+        FirebaseFirestore.getInstance()
+                .collection("orders")
+                .add(order)
+                .addOnSuccessListener(documentReference -> {
+                    String orderId = documentReference.getId();
+                    generateVnpayPaymentUrl(orderId, totalPrice);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi khi tạo đơn hàng: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void generateVnpayPaymentUrl(String orderId, double amount) {
+        // Thông tin cấu hình VNPay - sử dụng thông tin bạn cung cấp
+        String vnp_Version = "2.1.0";
+        String vnp_Command = "pay";
+        String vnp_TmnCode = "7EKW7ZCF"; // Mã website của bạn trên VNPay
+        String vnp_Amount = String.valueOf((int)(amount * 100)); // Nhân 100 để chuyển sang VND
+        String vnp_BankCode = ""; // Có thể để trống để người dùng chọn
+        String vnp_CreateDate = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.of("UTC"))
+                .format(Instant.now());
+        Log.d("VNPAY_DEBUG", "Thời gian UTC: " + vnp_CreateDate);
+        String vnp_CurrCode = "VND";
+        String vnp_IpAddr = "127.0.0.1"; // IP của máy, trong thực tế cần lấy địa chỉ thật
+        String vnp_Locale = "vn"; // Ngôn ngữ hiển thị
+        String vnp_OrderInfo = "Thanh toan don hang " + orderId;
+        String vnp_OrderType = "other";
+        String vnp_ReturnUrl = "doanapp://vnpay/result"; // URL callback cho app
+        String vnp_TxnRef = orderId; // Mã tham chiếu đơn hàng
+        String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+
+        // Tạo map chứa các tham số
+        Map<String, String> vnp_Params = new TreeMap<>();
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_Amount", vnp_Amount);
+        vnp_Params.put("vnp_BankCode", vnp_BankCode);
+        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+        vnp_Params.put("vnp_CurrCode", vnp_CurrCode);
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+        vnp_Params.put("vnp_Locale", vnp_Locale);
+        vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
+        vnp_Params.put("vnp_OrderType", vnp_OrderType);
+        vnp_Params.put("vnp_ReturnUrl", vnp_ReturnUrl);
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+
+        // Tạo chuỗi dữ liệu để hash
+        StringBuilder data = new StringBuilder();
+        for (Map.Entry<String, String> entry : vnp_Params.entrySet()) {
+            if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                data.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII));
+                data.append("=");
+                data.append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+                data.append("&");
+            }
+        }
+
+        // Thêm secret key và hash
+        String secretKey = "1CUZ0Q3SJVUXVRFOKN4X88U0SO4TPHTD"; // Khóa bí mật từ VNPay
+        String query = data.toString();
+        String signData = query.substring(0, query.length() - 1); // Bỏ dấu & cuối cùng
+        String vnp_SecureHash = hmacSHA512(secretKey, signData);
+
+        // Tạo URL thanh toán hoàn chỉnh
+        String paymentUrl = vnp_Url + "?" + signData + "&vnp_SecureHash=" + vnp_SecureHash;
+
+        // Mở trình duyệt để thanh toán
+        openPaymentBrowser(paymentUrl);
+    }
+
+    private void openPaymentBrowser(String paymentUrl) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(paymentUrl));
+        startActivity(browserIntent);
+    }
+
+    private String hmacSHA512(String key, String data) {
+        try {
+            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
+            Mac mac = Mac.getInstance("HmacSHA512");
+            mac.init(secretKeySpec);
+            byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hmacBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi tạo chữ ký HMAC SHA512", e);
+        }
+    }
+
+
+
+
+
+
+
+
+
 
     private void placeOrder(String paymentMethod) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -185,12 +358,14 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         Map<String, Object> order = new HashMap<>();
         order.put("userId", userId);
         order.put("address", address);
+        order.put("customerName", userName);
         order.put("phone", phone);
         order.put("email", email);
         order.put("paymentMethod", paymentMethod);
         order.put("totalPrice", totalPrice);
         order.put("status", "Chờ xử lý");
-        order.put("createdAt", System.currentTimeMillis());
+        String isoDateTime = Instant.now().toString();
+        order.put("createdAt", isoDateTime);
         order.put("items", cartItems); // nếu cần map lại định dạng thì xử lý thêm
 
         FirebaseFirestore.getInstance()
@@ -217,6 +392,9 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.show();
 
+        // 🔔 Gửi thông báo
+        showOrderNotification();
+
         Button btnBack = dialogView.findViewById(R.id.btnBackToShopping);
         btnBack.setOnClickListener(v -> {
             dialog.dismiss();
@@ -230,7 +408,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     private void clearCart(String userId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("cart")
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("user_id", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
@@ -245,17 +423,69 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         for (CartItem item : cartItems) {
             String variantId = item.getVariant_id();  // Giả sử mỗi CartItem có variantId
             int purchasedQuantity = item.getQuantity();
+            Log.d("TAG", "updateProductVariants: " + purchasedQuantity);
 
             db.collection("product_variants").document(variantId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            long currentStock = documentSnapshot.getLong("quantity");
-                            long newStock = currentStock - purchasedQuantity;
+                            Long currentStock = documentSnapshot.getLong("quantity");
+                            Log.d("TAG", "updateProductVariants2: " + currentStock);
 
-                            documentSnapshot.getReference().update("quantity", newStock);
+                            if (currentStock != null) {
+                                long newStock = currentStock - purchasedQuantity;
+
+                                // Đảm bảo số lượng không bị âm
+                                newStock = Math.max(newStock, 0);
+
+                                documentSnapshot.getReference().update("quantity", newStock);
+                            }
                         }
                     });
+        }
+    }
+
+    private void showOrderNotification() {
+
+        String channelId = "order_channel_id";
+        String channelName = "Order Notifications";
+
+        // Tạo Notification Channel cho Android 8+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Thông báo về đơn hàng");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        // Intent khi bấm vào thông báo
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_success) // Thay bằng icon có sẵn trong drawable
+                .setContentTitle("Đặt hàng thành công")
+                .setContentText("Cảm ơn bạn đã mua hàng! Đơn hàng của bạn đang được xử lý.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        // Kiểm tra quyền trước khi gửi thông báo (Android 13+)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, builder.build());
         }
     }
 
@@ -272,7 +502,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String name = documentSnapshot.getString("name");
+                        userName = documentSnapshot.getString("name");
                         String phone = documentSnapshot.getString("phone");
                         String email = documentSnapshot.getString("email");
 

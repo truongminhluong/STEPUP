@@ -5,17 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FB"
-    android:layout_marginTop="90px"
-    android:layout_marginBottom="110px"
     android:padding="16dp">
 
     <!-- Nút quay lại -->
     <ImageButton
         android:id="@+id/btnBack"
-        android:visibility="gone"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/baseline_arrow_back_ios_new_24"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_back"
+        android:contentDescription="Back"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -33,14 +32,14 @@
     <!-- Nút lưu -->
     <ImageButton
         android:id="@+id/btnSave"
-        android:layout_width="1dp"
-        android:layout_height="2dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Lưu"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:src="@drawable/ic_save"
+        android:contentDescription="Lưu"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Tiêu đề -->
     <TextView

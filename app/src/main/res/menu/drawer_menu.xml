@@ -41,6 +41,7 @@
             android:id="@+id/nav_AccountAndSettings"
             android:icon="@android:drawable/ic_menu_manage"
             android:title="@string/account_settings" />
+
     </group>
 
     <!-- Divider: tạo bằng một item trống có layout tùy chỉnh -->
