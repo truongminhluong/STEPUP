@@ -99,14 +99,16 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     private static final int REQUEST_CHECK_SETTINGS = 2;        // Request code bật GPS
     private static final int REQUEST_ADDRESS_ACTIVITY = 123;    // Request code màn AddressActivity
 
+    private static final int REQUEST_VOUCHER = 124;
+
     private GoogleMap ggMap;                     // Đối tượng bản đồ Google Map
     private FusedLocationProviderClient fusedLocationClient;  // Đối tượng lấy vị trí hiện tại
     private LatLng currentLatLng;                 // Lưu vị trí hiện tại
-    private TextView tvDiachi, tvEmail, tvPhone, tvPricePay;
+    private TextView tvDiachi, tvEmail, tvPhone, tvPricePay, txtonall;
     private Toolbar paymentToolbar;
     private CheckBox checkbox_cod, checkbox_momo;
     private Button btnMyCart;
-    private String userName;
+    private String userName, voucherCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +134,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     private void initViews() {
         paymentToolbar = findViewById(R.id.paymentToolbar);
         tvDiachi = findViewById(R.id.tvDiachi);
+        txtonall = findViewById(R.id.voucherall);
         tvEmail = findViewById(R.id.tvEmail);
         tvPhone = findViewById(R.id.tvPhone);
         tvPricePay = findViewById(R.id.tvPricePay);
@@ -201,6 +204,14 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
             }
         });
 
+        txtonall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(PaymentActivity.this, VoucherActivity.class);
+                startActivityForResult(intent, REQUEST_VOUCHER);  // Mở màn chọn voucher
+            }
+        });
+
         btnMyCart.setOnClickListener(v -> {
             if (checkbox_cod.isChecked()) {
                 placeOrder("COD");
@@ -238,6 +249,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         String isoDateTime = Instant.now().toString();
         order.put("createdAt", isoDateTime);
         order.put("items", cartItems);
+        order.put("voucherCode", voucherCode != null ? voucherCode : "");
 
         FirebaseFirestore.getInstance()
                 .collection("orders")
@@ -333,14 +345,6 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
 
-
-
-
-
-
-
-
-
     private void placeOrder(String paymentMethod) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String address = tvDiachi.getText().toString();
@@ -366,6 +370,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         order.put("status", "Chờ xử lý");
         String isoDateTime = Instant.now().toString();
         order.put("createdAt", isoDateTime);
+        order.put("voucherCode", voucherCode != null ? voucherCode : ""); // Thêm mã voucher nếu có
         order.put("items", cartItems); // nếu cần map lại định dạng thì xử lý thêm
 
         FirebaseFirestore.getInstance()
@@ -532,6 +537,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         tvPricePay.setText(String.format(Locale.getDefault(), "%,.0f đ", totalPrice));
     }
 
+
     // Khi bản đồ đã sẵn sàng
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -648,7 +654,32 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
             LatLng selectedLatLng = new LatLng(lat, lng);
             updateMapAndAddress(selectedLatLng);   // Cập nhật map theo địa chỉ chọn
             tvDiachi.setText(address);             // Cập nhật địa chỉ
+        } else if (requestCode == REQUEST_VOUCHER && resultCode == RESULT_OK && data != null) {
+            String type = data.getStringExtra("voucher_type");
+            double value = data.getDoubleExtra("voucher_value", 0.0);
+            double minimumSpend = data.getDoubleExtra("voucher_minimum", 0.0);
+            voucherCode = data.getStringExtra("voucher_code");
+
+            double total = getIntent().getDoubleExtra("totalPrice", 0.0);
+            double discount = 0.0;
+
+            if (total >= minimumSpend) {
+                if (type != null && type.toLowerCase().contains("%")) {
+                    discount = total * value / 100;
+                } else {
+                    discount = value;
+                }
+            } else {
+                Toast.makeText(this, "Không đủ điều kiện áp dụng voucher", Toast.LENGTH_SHORT).show();
+            }
+
+            double finalPrice = Math.max(0, total - discount);
+            tvPricePay.setText(String.format(Locale.getDefault(), "%,.0f đ", finalPrice));
+            getIntent().putExtra("finalPriceWithVoucher", finalPrice);
+
+            txtonall.setText("Voucher đã áp dụng: " + voucherCode);
         }
+
     }
 
     // Kết quả xin quyền vị trí
