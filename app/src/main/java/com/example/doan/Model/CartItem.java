@@ -1,52 +1,74 @@
 package com.example.doan.Model;
 
-public class CartItem {
-    private String id;
-    private String name;
-    private int price;
-    private String image;
+import com.google.firebase.firestore.PropertyName;
+
+import java.io.Serializable;
+
+public class CartItem implements Serializable {
+    private String user_id;
+    private String product_id;
+    private String productName;
+    private String variant_id;
+    private double price;
     private int quantity;
+    private String size;
+    private String imageUrl;
+    public CartItem() {
 
-    public CartItem() {}
+    }
 
-    public CartItem(String id, String name, int price, String image, int quantity) {
-        this.id = id;
-        this.name = name;
+    public CartItem(String user_id, String product_id, String productName, String variant_id, double price, int quantity, String size, String imageUrl) {
+        this.user_id = user_id;
+        this.product_id = product_id;
+        this.productName = productName;
+        this.variant_id = variant_id;
         this.price = price;
-        this.image = image;
         this.quantity = quantity;
+        this.size = size;
+        this.imageUrl = imageUrl;
+    }
+    @PropertyName("user_id")
+    public String getUserId() {
+        return user_id;
+    }
+    @PropertyName("user_id")
+    public void setUserId(String user_id) {
+        this.user_id = user_id;
     }
 
-    public String getId() {
-        return id;
+    @PropertyName("product_id")
+    public String getProductId() {
+        return product_id;
+    }
+    @PropertyName("product_id")
+    public void setProductId(String product_id) {
+        this.product_id = product_id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @PropertyName("product_name")
+    public String getProductName() {
+        return productName;
+    }
+    @PropertyName("product_name")
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
-    public String getName() {
-        return name;
+    @PropertyName("product_variant_id")
+    public String getVariant_id() {
+        return variant_id;
+    }
+    @PropertyName("product_variant_id")
+    public void setVariant_id(String variant_id) {
+        this.variant_id = variant_id;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(double price) {
         this.price = price;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 
     public int getQuantity() {
@@ -55,5 +77,35 @@ public class CartItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+    @PropertyName("product_image")
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    @PropertyName("product_image")
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "CartItem{" +
+                "user_id='" + user_id + '\'' +
+                ", product_id='" + product_id + '\'' +
+                ", productName='" + productName + '\'' +
+                ", variant_id='" + variant_id + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                ", size='" + size + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 }

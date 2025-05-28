@@ -2,6 +2,7 @@ package com.example.doan.Model;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -24,11 +25,56 @@ public class Product implements Serializable {
         return variants;
     }
 
-    public Product() {
+    public Product(String s) {
     }
 
-    public Product(String name) {
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return price == product.price && status == product.status && hasVariation == product.hasVariation && quantity == product.quantity && bestSeller == product.bestSeller && Objects.equals(id, product.id) && Objects.equals(name, product.name) && Objects.equals(code, product.code) && Objects.equals(brand, product.brand) && Objects.equals(description, product.description) && Objects.equals(imageUrl, product.imageUrl) && Objects.equals(variants, product.variants);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, code, price, brand, description, status, hasVariation, quantity, imageUrl, bestSeller, variants);
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                ", price=" + price +
+                ", brand='" + brand + '\'' +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", hasVariation=" + hasVariation +
+                ", quantity=" + quantity +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", bestSeller=" + bestSeller +
+                ", variants=" + variants +
+                '}';
+    }
+
+    public Product(String id, String name, String code, long price, String brand, String description, boolean status, boolean hasVariation, int quantity, String imageUrl, boolean bestSeller, List<ProductVariant> variants) {
+        this.id = id;
         this.name = name;
+        this.code = code;
+        this.price = price;
+        this.brand = brand;
+        this.description = description;
+        this.status = status;
+        this.hasVariation = hasVariation;
+        this.quantity = quantity;
+        this.imageUrl = imageUrl;
+        this.bestSeller = bestSeller;
+        this.variants = variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
     }
 
     public Product(String id, String name, String code, long price, String brand,

@@ -21,6 +21,18 @@ import java.util.List;
 public class ProductVariantColorAdapter extends RecyclerView.Adapter<ProductVariantColorAdapter.ProductVariantColorViewHolder> {
 
     private List<ProductVariant> variantColorList;
+    private int selectedPosition = RecyclerView.NO_POSITION;
+
+
+    private OnColorSelectedListener listener;
+
+    public interface OnColorSelectedListener {
+        void onColorSelected(ProductVariant variant, int position);
+    }
+
+    public void setOnColorSelectedListener(OnColorSelectedListener listener) {
+        this.listener = listener;
+    }
 
     public ProductVariantColorAdapter(List<ProductVariant> variantColorList) {
         this.variantColorList = variantColorList;
@@ -33,19 +45,49 @@ public class ProductVariantColorAdapter extends RecyclerView.Adapter<ProductVari
         return new ProductVariantColorViewHolder(view);
     }
 
-
     @Override
     public void onBindViewHolder(@NonNull ProductVariantColorViewHolder holder, int position) {
         ProductVariant variant = variantColorList.get(position);
         holder.bind(variant);
-    }
 
+        if (position == selectedPosition) {
+            holder.ivColor.setBackgroundResource(R.drawable.bg_color_selected);
+        } else {
+            holder.ivColor.setBackgroundResource(R.drawable.bg_color_unselected);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            int oldPosition = selectedPosition;
+            selectedPosition = holder.getAdapterPosition();
+
+            notifyItemChanged(oldPosition);
+            notifyItemChanged(selectedPosition);
+
+            if (listener != null && selectedPosition >= 0 && selectedPosition < variantColorList.size()) {
+                // Use the correct ID - the variant's ID, not product_id
+                ProductVariant selectedVariant = variantColorList.get(selectedPosition);
+                listener.onColorSelected(selectedVariant, selectedPosition);
+
+                // Log the selection for debugging
+                Log.d("ColorAdapter", "Selected variant ID: " + variantColorList.get(selectedPosition).getProduct_id());
+            }
+        });
+    }
 
     @Override
     public int getItemCount() {
-        Log.d("E", "getItemCount: " + variantColorList.size());
-        return variantColorList.size();
+        return variantColorList != null ? variantColorList.size() : 0;
+    }
 
+    public String getSelectedProductVariantId() {
+        if (selectedPosition >= 0 && selectedPosition < variantColorList.size()) {
+            return variantColorList.get(selectedPosition).getProduct_id();
+        }
+        return null;
+    }
+
+    public int getSelectedPosition() {
+        return selectedPosition;
     }
 
     public class ProductVariantColorViewHolder extends RecyclerView.ViewHolder {
@@ -57,47 +99,26 @@ public class ProductVariantColorAdapter extends RecyclerView.Adapter<ProductVari
         }
 
         public void bind(ProductVariant variant) {
-            if (variant == null) {
-                return;
-            }
+            if (variant == null) return;
 
-            Log.d("ProductVariant", "Image URL: " + variant.getImage_url());
-            // Chuyển đổi chuỗi Base64 thành Bitmap
             Bitmap bitmap = decodeBase64ToBitmap(variant.getImage_url(), itemView.getContext());
-            Log.d("E", "bind: " + variant.getImage_url());
             ivColor.setImageBitmap(bitmap);
         }
     }
 
-    public Bitmap decodeBase64ToBitmap(String base64Str, Context context) {
-        Log.d("Base64String", base64Str);
-
-        // Kiểm tra chuỗi Base64 hợp lệ
+    private Bitmap decodeBase64ToBitmap(String base64Str, Context context) {
         if (base64Str == null || base64Str.trim().isEmpty()) {
-            Log.e("Base64Error", "Chuỗi Base64 không hợp lệ");
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
+            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike);
         }
 
         try {
-            // 🛠️ Đã thêm đoạn này để hỗ trợ các định dạng khác ngoài PNG
             String base64Image = base64Str.replaceFirst("^data:image/[^;]+;base64,", "");
-
             byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-
-            if (bitmap == null) {
-                Log.e("Base64Error", "Không thể giải mã Base64 thành Bitmap");
-                return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
-            }
-
-            return bitmap;
-        } catch (IllegalArgumentException e) {
-            Log.e("Base64Error", "Lỗi khi giải mã Base64", e);
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
+            return bitmap != null ? bitmap : BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike);
         } catch (Exception e) {
-            Log.e("Base64Error", "Lỗi không xác định", e);
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
+            Log.e("Base64Error", "Lỗi giải mã Base64", e);
+            return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike);
         }
     }
-
 }

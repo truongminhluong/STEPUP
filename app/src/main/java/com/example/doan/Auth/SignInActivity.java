@@ -22,9 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan.MainActivity;
 import com.example.doan.R;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -71,7 +69,8 @@ public class SignInActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
-            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
+            getSupportActionBar().setHomeButtonEnabled(true);// Kích hoạt nút back
+            actionBar.setTitle("");
         }
     }
 
@@ -161,4 +160,5 @@ public class SignInActivity extends AppCompatActivity {
                     }
                 });
     }
+
 }

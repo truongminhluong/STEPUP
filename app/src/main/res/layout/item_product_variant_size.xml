@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
@@ -9,16 +8,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/imageColor"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+        <TextView
+            android:id="@+id/tvSize"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginRight="16dp"
-            android:background="@drawable/bg_color_unselected"
-            android:src="@drawable/img_1" />
+            android:background="@drawable/bg_size_unselected"
+            android:gravity="center"
+            android:text="38"
+            android:textSize="20sp" />
 
     </LinearLayout>
 

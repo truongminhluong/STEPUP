@@ -1,20 +1,28 @@
 package com.example.doan.Screens;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -22,8 +30,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.doan.MainActivity;
+import com.example.doan.Model.CartItem;
 import com.example.doan.R;
-import com.example.doan.VoucherQuaTangActivity;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
@@ -39,10 +48,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Activity cho màn hình thanh toán, bao gồm bản đồ để chọn địa chỉ giao hàng.
@@ -56,23 +70,17 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     private GoogleMap ggMap;                     // Đối tượng bản đồ Google Map
     private FusedLocationProviderClient fusedLocationClient;  // Đối tượng lấy vị trí hiện tại
     private LatLng currentLatLng;                 // Lưu vị trí hiện tại
-    private TextView tvDiachi, txtonall;                    // TextView hiển thị địa chỉ
-    private Toolbar paymentToolbar;               // Toolbar thanh toán
-    @SuppressLint("WrongViewCast")
+    private TextView tvDiachi, tvEmail, tvPhone, tvPricePay;
+    private Toolbar paymentToolbar;
+    private CheckBox checkbox_cod, checkbox_momo;
+    private Button btnMyCart;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        // Cho phép hiển thị tràn viền
+        EdgeToEdge.enable(this);  // Cho phép hiển thị tràn viền
         setContentView(R.layout.activity_payment);
-        txtonall  = findViewById(R.id.voucherall);
-        txtonall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(PaymentActivity.this, VoucherQuaTangActivity.class);
-                startActivity(intent);
-            }
-        });
+
         // Xử lý lề hệ thống để tránh che giao diện
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -80,14 +88,19 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
             return insets;
         });
 
-        initViews();     // Khởi tạo view
-        setupToolbar();  // Thiết lập Toolbar
+        initViews();
+        setupToolbar();
+        setListeners();
+        loadUser();
+        loadCartAndCalculateTotal();
     }
 
-    // Khởi tạo view
     private void initViews() {
         paymentToolbar = findViewById(R.id.paymentToolbar);
         tvDiachi = findViewById(R.id.tvDiachi);
+        tvEmail = findViewById(R.id.tvEmail);
+        tvPhone = findViewById(R.id.tvPhone);
+        tvPricePay = findViewById(R.id.tvPricePay);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         // Gán Map Fragment và set callback khi map sẵn sàng
@@ -96,6 +109,10 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+
+        checkbox_cod = findViewById(R.id.checkbox_cod);
+        checkbox_momo = findViewById(R.id.checkbox_momo);
+        btnMyCart = findViewById(R.id.btnMyCart);
     }
 
     // Thiết lập Toolbar
@@ -113,6 +130,176 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
     public boolean onSupportNavigateUp() {
         finish();  // Khi bấm back trên Toolbar, đóng Activity
         return super.onSupportNavigateUp();
+    }
+
+    private void setListeners() {
+        checkbox_cod.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    // Bỏ chọn checkbox kia
+                    if (checkbox_momo.isChecked()) {
+                        checkbox_momo.setChecked(false);
+                    }
+                }
+            }
+        });
+
+        checkbox_momo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    // Bỏ chọn checkbox kia
+                    if (checkbox_cod.isChecked()) {
+                        checkbox_cod.setChecked(false);
+                    }
+                }
+            }
+        });
+
+        btnMyCart.setOnClickListener(v -> {
+            if (checkbox_cod.isChecked()) {
+                placeOrder("COD");
+            } else if (checkbox_momo.isChecked()) {
+                Toast.makeText(this, "okok", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void placeOrder(String paymentMethod) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String address = tvDiachi.getText().toString();
+        String phone = tvPhone.getText().toString();
+        String email = tvEmail.getText().toString();
+        List<CartItem> cartItems = (List<CartItem>) getIntent().getSerializableExtra("cartItems");
+        double totalPrice = getIntent().getDoubleExtra("totalPrice", 0.0);
+
+        if (address.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn địa chỉ giao hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tạo đối tượng đơn hàng
+        Map<String, Object> order = new HashMap<>();
+        order.put("userId", userId);
+        order.put("address", address);
+        order.put("phone", phone);
+        order.put("email", email);
+        order.put("paymentMethod", paymentMethod);
+        order.put("totalPrice", totalPrice);
+        order.put("status", "Chờ xử lý");
+        order.put("createdAt", System.currentTimeMillis());
+        order.put("items", cartItems); // nếu cần map lại định dạng thì xử lý thêm
+
+        FirebaseFirestore.getInstance()
+                .collection("orders")
+                .add(order)
+                .addOnSuccessListener(documentReference -> {
+                    updateProductVariants(cartItems); // Cập nhật số lượng sản phẩm
+                    clearCart(userId);// xóa giỏ hàng
+                    showSuccessDialog();//hiển thị thanh toán thành công
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Đặt hàng thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void showSuccessDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.success_dialog, null);
+        builder.setView(dialogView);
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false); // không cho bấm ngoài để tắt
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.show();
+
+        Button btnBack = dialogView.findViewById(R.id.btnBackToShopping);
+        btnBack.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent intent = new Intent(PaymentActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish(); // đóng màn hình thanh toán
+        });
+    }
+
+    private void clearCart(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("cart")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        document.getReference().delete();  // xóa từng item trong giỏ hàng
+                    }
+                });
+    }
+
+    private void updateProductVariants(List<CartItem> cartItems) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        for (CartItem item : cartItems) {
+            String variantId = item.getVariant_id();  // Giả sử mỗi CartItem có variantId
+            int purchasedQuantity = item.getQuantity();
+
+            db.collection("product_variants").document(variantId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            long currentStock = documentSnapshot.getLong("quantity");
+                            long newStock = currentStock - purchasedQuantity;
+
+                            documentSnapshot.getReference().update("quantity", newStock);
+                        }
+                    });
+        }
+    }
+
+
+
+
+
+    private void loadUser() {
+        // Lấy thông tin người dùng từ Firestore
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("name");
+                        String phone = documentSnapshot.getString("phone");
+                        String email = documentSnapshot.getString("email");
+
+                        // Hiển thị thông tin người dùng
+
+                        tvPhone.setText(phone);
+                        tvEmail.setText(email);
+                    }
+                });
+    }
+
+    private void loadCartAndCalculateTotal() {
+        // Lấy dữ liệu từ Intent
+        List<CartItem> cartItems = (List<CartItem>) getIntent().getSerializableExtra("cartItems");
+
+        double totalPrice = getIntent().getDoubleExtra("totalPrice", 0.0);
+
+        Log.d("CART_JSON", "cartItemsJson: " + cartItems);
+        Log.d("CART_JSON", "cartItemsJson: " + cartItems.size());
+
+        for (int i = 0; i < cartItems.size(); i++) {
+            Log.d("CART_JSON", "Item " + i + ": " + cartItems.get(i).toString());
+        }
+
+
+        // Hiển thị tổng tiền
+        tvPricePay.setText(String.format(Locale.getDefault(), "%,.0f đ", totalPrice));
     }
 
     // Khi bản đồ đã sẵn sàng
