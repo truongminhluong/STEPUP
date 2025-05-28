@@ -3,6 +3,7 @@ package com.example.doan.Screens;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -14,6 +15,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.doan.MainActivity;
 import com.example.doan.Model.CartItem;
 import com.example.doan.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -39,6 +42,8 @@ public class VnpayResultActivity extends AppCompatActivity {
             if ("00".equals(vnp_ResponseCode)) {
                 // Thanh toán thành công
                 updateOrderStatus(vnp_TxnRef, "Đang xử lý");
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                clearCart(userId);
                 Toast.makeText(this, "Thanh toán thành công. Mã giao dịch: " + vnp_TxnRef, Toast.LENGTH_LONG).show();
                 showSuccessDialog();
             } else {
@@ -53,6 +58,22 @@ public class VnpayResultActivity extends AppCompatActivity {
         }
     }
 
+    private void clearCart(String userId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("cart")
+                .whereEqualTo("user_id", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        document.getReference().delete();
+                    }
+                    Log.d("VNPAY", "Đã xóa giỏ hàng");
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("VNPAY", "Lỗi khi xóa giỏ hàng", e);
+                });
+    }
+
     private void updateOrderStatus(String orderId, String status) {
         FirebaseFirestore.getInstance()
                 .collection("orders")
@@ -61,7 +82,7 @@ public class VnpayResultActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     if ("Đang xử lý".equals(status)) {
                         // Cập nhật số lượng sản phẩm nếu thanh toán thành công
-//                        updateProductQuantities(orderId);
+                        updateProductQuantities(orderId);
                     }
                 });
     }
@@ -73,18 +94,21 @@ public class VnpayResultActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        List<Map<String, Object>> itemsMap = (List<Map<String, Object>>) documentSnapshot.get("items");
-                        if (itemsMap != null) {
-                            for (Map<String, Object> itemMap : itemsMap) {
-                                // Sử dụng DocumentReference để chuyển đổi
-                                CartItem item = documentSnapshot.toObject(CartItem.class);
-                                updateVariantQuantity(item.getVariant_id(), item.getQuantity());
+                        // Sửa lại cách lấy danh sách items
+                        List<Map<String, Object>> items = (List<Map<String, Object>>) documentSnapshot.get("items");
+                        if (items != null) {
+                            for (Map<String, Object> item : items) {
+                                String variantId = (String) item.get("product_variant_id");
+                                Long quantityLong = (Long) item.get("quantity");
+                                int quantity = quantityLong != null ? quantityLong.intValue() : 0;
+
+                                if (variantId != null && quantity > 0) {
+                                    updateVariantQuantity(variantId, quantity);
+                                }
                             }
                         }
                     }
                 });
-
-
     }
 
     private void updateVariantQuantity(String variantId, int quantity) {
@@ -94,10 +118,19 @@ public class VnpayResultActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        long currentStock = documentSnapshot.getLong("quantity");
-                        long newStock = currentStock - quantity;
-                        documentSnapshot.getReference().update("quantity", newStock);
+                        Long currentStock = documentSnapshot.getLong("quantity");
+                        if (currentStock != null) {
+                            long newStock = currentStock - quantity;
+                            newStock = Math.max(newStock, 0); // Đảm bảo không âm
+                            documentSnapshot.getReference().update("quantity", newStock)
+                                    .addOnFailureListener(e -> {
+                                        Log.e("VNPAY", "Lỗi cập nhật số lượng", e);
+                                    });
+                        }
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("VNPAY", "Lỗi truy vấn biến thể", e);
                 });
     }
 

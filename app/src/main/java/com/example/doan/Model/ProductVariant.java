@@ -104,6 +104,8 @@ public class ProductVariant implements Serializable {
         this.size = size;
     }
 
+
+
     @NonNull
     @Override
     public String toString() {

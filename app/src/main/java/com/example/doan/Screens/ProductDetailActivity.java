@@ -198,6 +198,12 @@ public class ProductDetailActivity extends AppCompatActivity {
                         ProductVariant matchedVariant = variantDoc.toObject(ProductVariant.class);
                         String variantId = variantDoc.getId();
 
+                        // Kiểm tra số lượng tồn kho
+                        if (matchedVariant.getQuantity() <= 0) {
+                            Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
                         // Kiểm tra xem đã có sản phẩm này trong giỏ hàng chưa
                         db.collection("cart")
                                 .whereEqualTo("user_id", userId)
@@ -205,10 +211,17 @@ public class ProductDetailActivity extends AppCompatActivity {
                                 .get()
                                 .addOnSuccessListener(cartQuery -> {
                                     if (!cartQuery.isEmpty()) {
-                                        // Cập nhật quantity
+                                        // Kiểm tra xem số lượng thêm vào có vượt quá tồn kho không
                                         DocumentSnapshot cartDoc = cartQuery.getDocuments().get(0);
-                                        DocumentReference cartRef = cartDoc.getReference();
                                         long currentQuantity = cartDoc.getLong("quantity") != null ? cartDoc.getLong("quantity") : 0;
+
+                                        if (currentQuantity >= matchedVariant.getQuantity()) {
+                                            Toast.makeText(this, "Số lượng sản phẩm trong giỏ đã đạt tối đa số lượng tồn kho", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+
+                                        // Cập nhật quantity
+                                        DocumentReference cartRef = cartDoc.getReference();
                                         cartRef.update("quantity", currentQuantity + 1)
                                                 .addOnSuccessListener(unused -> {
                                                     Toast.makeText(this, "Cập nhật số lượng giỏ hàng thành công", Toast.LENGTH_SHORT).show();
@@ -244,14 +257,13 @@ public class ProductDetailActivity extends AppCompatActivity {
                                     Toast.makeText(this, "Lỗi khi kiểm tra giỏ hàng", Toast.LENGTH_SHORT).show();
                                 });
                     } else {
-                        Toast.makeText(this, "Sản phẩm này đã hết hàng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Không tìm thấy biến thể sản phẩm", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Lỗi khi tìm biến thể sản phẩm", Toast.LENGTH_SHORT).show();
                 });
     }
-
 
     private void updatePriceForSelectedVariant() {
         if (selectedColorIndex != -1 && selectedSizeIndex != -1) {
@@ -347,30 +359,41 @@ public class ProductDetailActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : task.getResult()) {
                             ProductVariant variant = doc.toObject(ProductVariant.class);
 
-                            // Xử lý màu
-                            String color = variant.getImage_url();
-                            if (!addedColors.contains(color)) {
-                                productVariantColorList.add(variant);
-                                addedColors.add(color);
-                            }
+                            // Chỉ thêm các biến thể còn hàng (quantity > 0)
+                            if (variant.getQuantity() > 0) {
+                                // Xử lý màu
+                                String color = variant.getImage_url();
+                                if (!addedColors.contains(color)) {
+                                    productVariantColorList.add(variant);
+                                    addedColors.add(color);
+                                }
 
-                            // Xử lý size
-                            String size = variant.getSize();
-                            if (!addedSizes.contains(size)) {
-                                productVariantSizeList.add(variant);
-                                addedSizes.add(size);
+                                // Xử lý size
+                                String size = variant.getSize();
+                                if (!addedSizes.contains(size)) {
+                                    productVariantSizeList.add(variant);
+                                    addedSizes.add(size);
+                                }
                             }
-
                         }
+
+                        // Sắp xếp size
                         productVariantSizeList.sort((v1, v2) -> {
                             try {
                                 return Integer.compare(Integer.parseInt(v1.getSize()), Integer.parseInt(v2.getSize()));
                             } catch (NumberFormatException e) {
-                                return v1.getSize().compareTo(v2.getSize()); // fallback nếu size không phải số
+                                return v1.getSize().compareTo(v2.getSize());
                             }
                         });
+
                         productVariantColorAdapter.notifyDataSetChanged();
                         productVariantSizeAdapter.notifyDataSetChanged();
+
+                        // Kiểm tra nếu không còn biến thể nào có hàng
+                        if (productVariantColorList.isEmpty() || productVariantSizeList.isEmpty()) {
+                            btnAddToCart.setEnabled(false);
+                            Toast.makeText(this, "Sản phẩm này hiện đã hết hàng", Toast.LENGTH_SHORT).show();
+                        }
 
                     } else {
                         Log.e("FirestoreVariant", "Lỗi khi lấy biến thể", task.getException());

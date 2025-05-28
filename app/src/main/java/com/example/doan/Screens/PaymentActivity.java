@@ -1,6 +1,9 @@
 package com.example.doan.Screens;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -10,6 +13,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +32,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -67,6 +73,9 @@ import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -117,6 +126,7 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         loadUser();
         setListeners();
         loadCartAndCalculateTotal();
+        setupNotification();
     }
 
     private void initViews() {
@@ -137,6 +147,16 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         checkbox_cod = findViewById(R.id.checkbox_cod);
         checkbox_momo = findViewById(R.id.checkbox_momo);
         btnMyCart = findViewById(R.id.btnMyCart);
+    }
+
+    private void setupNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 200);
+            }
+        }
     }
 
     // Thiết lập Toolbar
@@ -215,7 +235,8 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         order.put("paymentMethod", "VNPay");
         order.put("totalPrice", totalPrice);
         order.put("status", "Chờ thanh toán");
-        order.put("createdAt", new java.sql.Timestamp(System.currentTimeMillis()));
+        String isoDateTime = Instant.now().toString();
+        order.put("createdAt", isoDateTime);
         order.put("items", cartItems);
 
         FirebaseFirestore.getInstance()
@@ -237,7 +258,10 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         String vnp_TmnCode = "7EKW7ZCF"; // Mã website của bạn trên VNPay
         String vnp_Amount = String.valueOf((int)(amount * 100)); // Nhân 100 để chuyển sang VND
         String vnp_BankCode = ""; // Có thể để trống để người dùng chọn
-        String vnp_CreateDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date());
+        String vnp_CreateDate = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.of("UTC"))
+                .format(Instant.now());
+        Log.d("VNPAY_DEBUG", "Thời gian UTC: " + vnp_CreateDate);
         String vnp_CurrCode = "VND";
         String vnp_IpAddr = "127.0.0.1"; // IP của máy, trong thực tế cần lấy địa chỉ thật
         String vnp_Locale = "vn"; // Ngôn ngữ hiển thị
@@ -340,7 +364,8 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         order.put("paymentMethod", paymentMethod);
         order.put("totalPrice", totalPrice);
         order.put("status", "Chờ xử lý");
-        order.put("createdAt", new java.sql.Timestamp(System.currentTimeMillis()));
+        String isoDateTime = Instant.now().toString();
+        order.put("createdAt", isoDateTime);
         order.put("items", cartItems); // nếu cần map lại định dạng thì xử lý thêm
 
         FirebaseFirestore.getInstance()
@@ -366,6 +391,9 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         dialog.setCancelable(false); // không cho bấm ngoài để tắt
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.show();
+
+        // 🔔 Gửi thông báo
+        showOrderNotification();
 
         Button btnBack = dialogView.findViewById(R.id.btnBackToShopping);
         btnBack.setOnClickListener(v -> {
@@ -395,26 +423,69 @@ public class PaymentActivity extends AppCompatActivity implements OnMapReadyCall
         for (CartItem item : cartItems) {
             String variantId = item.getVariant_id();  // Giả sử mỗi CartItem có variantId
             int purchasedQuantity = item.getQuantity();
+            Log.d("TAG", "updateProductVariants: " + purchasedQuantity);
 
             db.collection("product_variants").document(variantId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             Long currentStock = documentSnapshot.getLong("quantity");
+                            Log.d("TAG", "updateProductVariants2: " + currentStock);
 
                             if (currentStock != null) {
                                 long newStock = currentStock - purchasedQuantity;
 
-                                if (newStock <= 0) {
-                                    // Xoá biến thể nếu hết hàng
-                                    documentSnapshot.getReference().delete();
-                                } else {
-                                    // Cập nhật lại số lượng
-                                    documentSnapshot.getReference().update("quantity", newStock);
-                                }
+                                // Đảm bảo số lượng không bị âm
+                                newStock = Math.max(newStock, 0);
+
+                                documentSnapshot.getReference().update("quantity", newStock);
                             }
                         }
                     });
+        }
+    }
+
+    private void showOrderNotification() {
+
+        String channelId = "order_channel_id";
+        String channelName = "Order Notifications";
+
+        // Tạo Notification Channel cho Android 8+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Thông báo về đơn hàng");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        // Intent khi bấm vào thông báo
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_success) // Thay bằng icon có sẵn trong drawable
+                .setContentTitle("Đặt hàng thành công")
+                .setContentText("Cảm ơn bạn đã mua hàng! Đơn hàng của bạn đang được xử lý.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        // Kiểm tra quyền trước khi gửi thông báo (Android 13+)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, builder.build());
         }
     }
 

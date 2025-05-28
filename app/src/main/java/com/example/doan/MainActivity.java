@@ -1,5 +1,7 @@
 package com.example.doan;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -18,6 +20,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -26,6 +30,7 @@ import com.bumptech.glide.Glide;
 
 import com.example.doan.Adapter.CategoryAdapter;
 import com.example.doan.Auth.SignInActivity;
+import com.example.doan.Model.OrderNotification;
 import com.example.doan.Screens.MyCartActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -39,7 +44,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan.Model.Category;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import android.os.Build;
 import android.util.Log;
@@ -52,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
+    private ListenerRegistration orderStatusListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +92,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         // Kiểm tra xem người dùng đã đăng nhập hay chưa
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            // Chưa đăng nhập → chuyển về trang đăng nhập
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
             Intent intent = new Intent(MainActivity.this, SignInActivity.class);
             startActivity(intent);
-            finish(); // Không cho quay lại Main nếu chưa login
+            finish();
+        } else {
+            listenToOrderStatusChanges(currentUser.getUid());
         }
         // Nếu đã đăng nhập thì tiếp tục ở lại MainActivity như bình thường
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (orderStatusListener != null) {
+            orderStatusListener.remove();
+        }
     }
 
     private void hideSystemUI() {
@@ -217,6 +238,69 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+    }
+
+    //thoong báo trạng thái đơn hàng
+    private void listenToOrderStatusChanges(String userId) {
+        orderStatusListener = FirebaseFirestore.getInstance()
+                .collection("orders")
+                .whereEqualTo("userId", userId)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null) return;
+
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        if (dc.getType() == DocumentChange.Type.MODIFIED) {
+                            String newStatus = dc.getDocument().getString("status");
+                            String orderId = dc.getDocument().getId();
+                            sendOrderStatusNotification(newStatus);
+                            addNotificationToFirestore(orderId, newStatus, userId);
+                        }
+                    }
+                });
+    }
+
+    private void sendOrderStatusNotification(String status) {
+        String channelId = "order_status_channel";
+        createNotificationChannel(channelId);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("Trạng thái đơn hàng thay đổi")
+                .setContentText("Đơn hàng của bạn hiện tại là: " + status)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat.from(this).notify(1001, builder.build());
+    }
+
+    private void createNotificationChannel(String channelId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Trạng thái đơn hàng";
+            String description = "Thông báo khi trạng thái đơn hàng thay đổi";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void addNotificationToFirestore(String orderId, String status, String userId) {
+        String message = "Đơn hàng " + orderId + " đã cập nhật trạng thái: " + status;
+        OrderNotification notification = new OrderNotification(orderId, message, status, Timestamp.now());
+
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("notifications")
+                .add(notification)
+                .addOnSuccessListener(documentReference ->
+                        Log.d("Notification", "Đã thêm thông báo vào Firestore"))
+                .addOnFailureListener(e ->
+                        Log.e("Notification", "Lỗi khi thêm thông báo: ", e));
     }
 
 }
