@@ -2,119 +2,163 @@ package com.example.doan.Auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan.MainActivity;
 import com.example.doan.R;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 
 public class SignInActivity extends AppCompatActivity {
 
-    private static final int RC_SIGN_IN = 9001; // Mã yêu cầu cho sign-in Google
-    private GoogleSignInClient mGoogleSignInClient;  // Đối tượng GoogleSignInClient
-    private FirebaseAuth mAuth;  // FirebaseAuth instance
-    private Button btnGoogleSignIn;  // Nút đăng nhập với Google
+    private EditText edtName, edtPhone, edtEmail, edtPassword;
+    private TextView tvSignUp;
+    private Button btnSignIn;
+    private Toolbar signinToolbar;
+    private ImageView imgTogglePassword;
+    private boolean isPasswordVisible = false;
+    private FirebaseAuth auth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_in);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
-        // Khởi tạo FirebaseAuth
-        mAuth = FirebaseAuth.getInstance();
+        initViews();
+        setupToolbar();
+        setListeners();
 
-        // Cấu hình Google Sign-In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))  // Lấy ID Client từ Firebase
-                .requestEmail()  // Yêu cầu email
-                .build();
+    }
 
-        // Tạo GoogleSignInClient
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+    private void initViews() {
+        edtName = findViewById(R.id.edtName);
+        edtPhone = findViewById(R.id.edtPhone);
+        edtEmail = findViewById(R.id.edtEmail);
+        edtPassword = findViewById(R.id.edtPassword);
+        btnSignIn = findViewById(R.id.btnSignIn);
+        signinToolbar = findViewById(R.id.signinToolbar);
+        imgTogglePassword = findViewById(R.id.iconTogglePassword);
+        tvSignUp = findViewById(R.id.tvSignUp);
+        auth = FirebaseAuth.getInstance();
+    }
 
-        // Khởi tạo nút đăng nhập bằng Google
-        btnGoogleSignIn = findViewById(R.id.btnSignInGG);
-        btnGoogleSignIn.setOnClickListener(new View.OnClickListener() {
+    private void setupToolbar() {
+        setSupportActionBar(signinToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
+            getSupportActionBar().setHomeButtonEnabled(true);// Kích hoạt nút back
+            actionBar.setTitle("");
+        }
+    }
+
+    private void setListeners() {
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                signInWithGoogle();  // Gọi phương thức đăng nhập với Google
+            public void onClick(View view) {
+                if (validateInput()) {
+                    String email = edtEmail.getText().toString().trim();
+                    String password = edtPassword.getText().toString().trim();
+                    registerWithFirebase(email, password);
+                }
+            }
+        });
+
+        imgTogglePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePasswordVisibility();
+            }
+        });
+
+        tvSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
+                startActivity(intent);
             }
         });
     }
 
-    // Bắt đầu quy trình đăng nhập với Google
-    private void signInWithGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
+    private boolean validateInput() {
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
 
-    // Xử lý kết quả trả về từ Google Sign-In
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // Nếu kết quả đến từ đăng nhập Google
-        if (requestCode == RC_SIGN_IN) {
-            // Lấy tài khoản từ Intent và thực hiện đăng nhập Firebase
-            GoogleSignIn.getSignedInAccountFromIntent(data)
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            // Nếu đăng nhập thành công, lấy tài khoản Google
-                            GoogleSignInAccount account = task.getResult();
-                            firebaseAuthWithGoogle(account);  // Đăng nhập vào Firebase
-                        } else {
-                            // Nếu thất bại, log lỗi
-                            Log.w("SignInActivity", "Google sign in failed", task.getException());
-                            Toast.makeText(SignInActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+        if (email.isEmpty()) {
+            edtEmail.setError("Vui lòng nhập email");
+            edtEmail.requestFocus();
+            return false;
         }
+
+        // Kiểm tra định dạng email hợp lệ
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            edtEmail.setError("Email không hợp lệ");
+            edtEmail.requestFocus();
+            return false;
+        }
+
+        if (password.isEmpty()) {
+            edtPassword.setError("Vui lòng nhập mật khẩu");
+            edtPassword.requestFocus();
+            return false;
+        }
+
+        if (password.length() < 6) {
+            edtPassword.setError("Mật khẩu phải có ít nhất 6 ký tự");
+            edtPassword.requestFocus();
+            return false;
+        }
+
+        return true;
     }
 
-    // Đăng nhập vào Firebase bằng Google
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
-        // Lấy thông tin tài khoản Google
-        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
+    private void togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            edtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            imgTogglePassword.setImageResource(R.drawable.ic_eye_closed);
+        } else {
+            edtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            imgTogglePassword.setImageResource(R.drawable.ic_eye_open);
+        }
+        edtPassword.setSelection(edtPassword.getText().length());
+        isPasswordVisible = !isPasswordVisible;
+    }
+
+    private void registerWithFirebase(String email, String password) {
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Đăng nhập thành công, chuyển hướng đến MainActivity
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        updateUI(user);
+                        Toast.makeText(SignInActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
-                        // Nếu đăng nhập thất bại
-                        Log.w("SignInActivity", "Authentication failed", task.getException());
-                        Toast.makeText(SignInActivity.this, "Authentication Failed.", Toast.LENGTH_SHORT).show();
+                        Log.e("FIREBASE_AUTH", "Error: ", task.getException());
+                        Toast.makeText(SignInActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
-    // Cập nhật UI sau khi đăng nhập thành công
-    private void updateUI(FirebaseUser user) {
-        if (user != null) {
-            // Điều hướng người dùng đến MainActivity
-            Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
-
-    // Đăng xuất khỏi Firebase và Google
-    private void signOut() {
-        mAuth.signOut();
-        mGoogleSignInClient.signOut()
-                .addOnCompleteListener(this, task -> updateUI(null));
-    }
 }

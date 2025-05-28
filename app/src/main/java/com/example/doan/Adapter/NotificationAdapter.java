@@ -1,93 +1,64 @@
 package com.example.doan.Adapter;
 
-import android.content.Context;
-import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.doan.Model.Notification;
+import com.example.doan.Model.OrderNotification;
 import com.example.doan.R;
-import com.squareup.picasso.Picasso;
 
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
-public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
+public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
 
-    private final Context context;
-    private final List<Notification> notificationList;
-    private OnItemClickListener listener;
+    private final java.util.List<OrderNotification> notificationList;
 
-    public interface OnItemClickListener {
-        void onItemClick(Notification notification);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
-
-    public NotificationAdapter(Context context, List<Notification> notificationList) {
-        this.context = context;
+    public NotificationAdapter(java.util.List<OrderNotification> notificationList) {
         this.notificationList = notificationList;
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView messageText, statusText, timeText;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            messageText = itemView.findViewById(R.id.tv_message);
+            statusText = itemView.findViewById(R.id.tv_status);
+            timeText = itemView.findViewById(R.id.tv_time);
+        }
     }
 
     @NonNull
     @Override
-    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_notification, parent, false);
-        return new NotificationViewHolder(view);
+    public NotificationAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_order_notification, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        Notification notification = notificationList.get(position);
+    public void onBindViewHolder(@NonNull NotificationAdapter.ViewHolder holder, int position) {
+        OrderNotification notification = notificationList.get(position);
+        holder.messageText.setText(notification.getMessage());
+        holder.statusText.setText("Trạng thái: " + notification.getStatus());
 
-        holder.txtTitle.setText(notification.getTitle());
-        holder.txtPrice.setText(notification.getPrice());
-        holder.txtOldPrice.setText(notification.getOldPrice());
-        holder.txtTime.setText(notification.getTime());
-
-        // Gạch ngang giá cũ
-        holder.txtOldPrice.setPaintFlags(holder.txtOldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-
-        // Load hình ảnh
-        Picasso.get().load(notification.getImageUrl()).into(holder.imgProduct);
-
-        // Click item
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(notification);
-            }
-        });
-
-        // Hiển thị/ẩn chấm tròn nếu đã đọc hay chưa
-        holder.viewDot.setVisibility(notification.isRead() ? View.GONE : View.VISIBLE);
+        if (notification.getTimestamp() != null) {
+            String time = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                    .format(notification.getTimestamp().toDate());
+            holder.timeText.setText(time);
+        } else {
+            holder.timeText.setText("Không rõ thời gian");
+        }
     }
 
     @Override
     public int getItemCount() {
         return notificationList.size();
     }
-
-    public static class NotificationViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView imgProduct;
-        TextView txtTitle, txtPrice, txtOldPrice, txtTime;
-        View viewDot;
-
-        public NotificationViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imgProduct = itemView.findViewById(R.id.imgProduct);
-            txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtPrice = itemView.findViewById(R.id.txtPrice);
-            txtOldPrice = itemView.findViewById(R.id.txtOldPrice);
-            txtTime = itemView.findViewById(R.id.txtTime);
-            viewDot = itemView.findViewById(R.id.viewDot);
-        }
-    }
 }
+

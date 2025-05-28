@@ -3,7 +3,9 @@ package com.example.doan.Auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,6 +23,11 @@ import com.example.doan.MainActivity;
 import com.example.doan.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -36,7 +43,6 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign_up);
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -44,7 +50,6 @@ public class SignUpActivity extends AppCompatActivity {
         });
 
         initViews();
-        auth = FirebaseAuth.getInstance(); // ✅ Khởi tạo FirebaseAuth
         setupToolbar();
         setListeners();
     }
@@ -57,14 +62,15 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         signupToolbar = findViewById(R.id.signupToolbar);
         imgTogglePassword = findViewById(R.id.iconTogglePassword);
+
     }
 
     private void setupToolbar() {
         setSupportActionBar(signupToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút back
+            getSupportActionBar().setHomeButtonEnabled(true); // Kích hoạt nút back
             actionBar.setTitle("Sign Up");
         }
     }
@@ -76,15 +82,23 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void setListeners() {
-        btnSignUp.setOnClickListener(view -> {
-            if (validateInput()) {
-                String email = edtEmail.getText().toString().trim();
-                String password = edtPassword.getText().toString().trim();
-                registerWithFirebase(email, password);
+        btnSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (validateInput()) {
+                    String email = edtEmail.getText().toString().trim();
+                    String password = edtPassword.getText().toString().trim();
+                    registerWithFirebase(email, password);
+                }
             }
         });
 
-        imgTogglePassword.setOnClickListener(view -> togglePasswordVisibility());
+        imgTogglePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePasswordVisibility();
+            }
+        });
     }
 
     private boolean validateInput() {
@@ -105,6 +119,7 @@ public class SignUpActivity extends AppCompatActivity {
             return false;
         }
 
+        // Kiểm tra định dạng số điện thoại Việt Nam
         if (!phone.matches("^(03|05|07|08|09)\\d{8}$")) {
             edtPhone.setError("Số điện thoại không hợp lệ");
             edtPhone.requestFocus();
@@ -117,6 +132,7 @@ public class SignUpActivity extends AppCompatActivity {
             return false;
         }
 
+        // Kiểm tra định dạng email hợp lệ
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             edtEmail.setError("Email không hợp lệ");
             edtEmail.requestFocus();
@@ -151,21 +167,52 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void registerWithFirebase(String email, String password) {
+        auth = FirebaseAuth.getInstance();
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, MainActivity.class));
-                        finish();
+                        // Lấy UID của người dùng mới
+                        String userId = auth.getCurrentUser().getUid();
+
+                        // Lấy thông tin từ các ô input
+                        String name = edtName.getText().toString().trim();
+                        String phone = edtPhone.getText().toString().trim();
+
+                        // Tạo dữ liệu để lưu vào Firestore
+                        Map<String, Object> userData = new HashMap<>();
+                        userData.put("name", name);
+                        userData.put("email", email);
+                        userData.put("phone", phone);
+                        userData.put("created_at", FieldValue.serverTimestamp());
+
+                        // Ghi vào Firestore (ví dụ collection là "users")
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        db.collection("users").document(userId)
+                                .set(userData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                                    // Điều hướng sang com.example.doan.MainActivity
+                                    Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("FIRESTORE", "Lỗi khi ghi dữ liệu", e);
+                                    Toast.makeText(this, "Không thể lưu thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                });
                     } else {
                         String errorMessage;
                         if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            errorMessage = "Email đã được sử dụng.";
+                            errorMessage = "Tài khoản đã tồn tại.";
                         } else {
+                            Log.e("FIREBASE_AUTH", "Error: ", task.getException());
                             errorMessage = "Đăng ký thất bại: " + task.getException().getMessage();
                         }
-                        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
+
 }

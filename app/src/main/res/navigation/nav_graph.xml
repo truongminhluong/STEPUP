@@ -25,6 +25,7 @@
         android:name="com.example.doan.NavigationBar.NotificationFragment"
         android:label="Notification"
         tools:layout="@layout/fragment_notification"/>
+
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.doan.NavigationBar.ProfileFragment"

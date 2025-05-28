@@ -1,72 +1,66 @@
 package com.example.doan.NavigationBar;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.doan.Adapter.FavoriteAdapter;
-import com.example.doan.Model.Favorite;
-import com.example.doan.ProductDetailActivity;
 import com.example.doan.R;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the {@link FavoriteFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
 public class FavoriteFragment extends Fragment {
 
-    private RecyclerView recyclerView;
-    private FavoriteAdapter adapter;
-    private List<Favorite> favoriteList;
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorite, container, false);
-        setHasOptionsMenu(false);
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
 
-        // Ẩn ActionBar nếu có
-        if (getActivity() != null) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-        }
-
-        recyclerView = view.findViewById(R.id.recyclerFavourite);
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-
-        favoriteList = new ArrayList<>();
-        favoriteList.add(new Favorite("Nike Jordan", "BEST SELLER", "$58.7",
-                "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", true));
-        favoriteList.add(new Favorite("Nike Air Max", "BEST SELLER", "$37.8",
-                "https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/d3961fd7-4607-4aa2-8881-0c6ad91f6d77/air-max-dawn-shoes-J1cZzQ.png", true));
-        // Add thêm sản phẩm nếu muốn...
-
-        adapter = new FavoriteAdapter(favoriteList, getContext(), favorite -> {
-            Intent intent = new Intent(getContext(), ProductDetailActivity.class);
-            intent.putExtra("name", favorite.getName());
-            intent.putExtra("price", favorite.getPrice());
-            intent.putExtra("imageUrl", favorite.getImageUrl());
-            intent.putExtra("tag", favorite.getTag());
-            startActivity(intent);
-        });
-
-        recyclerView.setAdapter(adapter);
-
-        // Nút Back nếu có (tùy bạn thiết kế layout)
-        ImageView backBtn = view.findViewById(R.id.ivBack);
-        if (backBtn != null) {
-            backBtn.setOnClickListener(v -> requireActivity().onBackPressed());
-        }
-
-        return view;
+    public FavoriteFragment() {
+        // Required empty public constructor
     }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment FavoriteFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static FavoriteFragment newInstance(String param1, String param2) {
+        FavoriteFragment fragment = new FavoriteFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_favorite, container, false);
+    }
+
 }

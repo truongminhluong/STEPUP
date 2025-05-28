@@ -1,79 +1,129 @@
 package com.example.doan.NavigationBar;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.example.doan.Adapter.NotificationAdapter;
-import com.example.doan.Model.Notification;
-import com.example.doan.OrderTrackingActivity;
+import com.example.doan.Model.OrderNotification;
 import com.example.doan.R;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationFragment extends Fragment {
 
-    private RecyclerView rcvToday, rcvYesterday;
-    private NotificationAdapter adapterToday, adapterYesterday;
-    private List<Notification> listToday, listYesterday;
+    private RecyclerView recyclerView;
+    private NotificationAdapter adapter;
+    private final List<OrderNotification> notificationList = new ArrayList<>();
+
+    private static final String TAG = "NotificationFragment";
 
     public NotificationFragment() {
         // Required empty public constructor
     }
 
-    @SuppressLint("MissingInflatedId")
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_notification, container, false);
 
-        // Ánh xạ RecyclerViews
-        rcvToday = view.findViewById(R.id.rcvToday);
-        rcvYesterday = view.findViewById(R.id.rcvYesterday);
+        recyclerView = view.findViewById(R.id.recycler_notifications);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new NotificationAdapter(notificationList);
+        recyclerView.setAdapter(adapter);
 
-        // Khởi tạo danh sách dữ liệu
-        listToday = new ArrayList<>();
-        listYesterday = new ArrayList<>();
-
-        // Dữ liệu giả cho Today
-        listToday.add(new Notification("Giảm 50% toàn bộ sản phẩm", "$300", "$600", "2 phút trước", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", false));
-        listToday.add(new Notification("Ưu đãi cuối tuần", "$250", "$500", "1 giờ trước", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", true));
-
-        // Dữ liệu giả cho Yesterday
-        listYesterday.add(new Notification("Flash Sale hôm qua", "$100", "$200", "Hôm qua", "https://giaynation.com/wp-content/uploads/2023/06/Gia%CC%80y-Nike-Jordan-4-Military-768x768.jpg", false));
-
-        // Khởi tạo adapter
-        adapterToday = new NotificationAdapter(getContext(), listToday);
-        adapterYesterday = new NotificationAdapter(getContext(), listYesterday);
-
-        // Thiết lập LayoutManager & Adapter
-        rcvToday.setLayoutManager(new LinearLayoutManager(getContext()));
-        rcvYesterday.setLayoutManager(new LinearLayoutManager(getContext()));
-        rcvToday.setAdapter(adapterToday);
-        rcvYesterday.setAdapter(adapterYesterday);
-
-        // Xử lý sự kiện click
-        adapterToday.setOnItemClickListener(notification -> {
-            Intent intent = new Intent(requireActivity(), OrderTrackingActivity.class);
-            startActivity(intent);
-        });
-
-        adapterYesterday.setOnItemClickListener(notification -> {
-            Intent intent = new Intent(requireActivity(), OrderTrackingActivity.class);
-            startActivity(intent);
-        });
+        loadNotifications();
 
         return view;
+    }
+
+    private void loadNotifications() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String userId = currentUser.getUid();
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("notifications")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Toast.makeText(getContext(), "Lỗi tải thông báo", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error loading notifications", e);
+                        return;
+                    }
+                    if (snapshots != null) {
+                        notificationList.clear(); // Xóa hết để tránh trùng lặp dữ liệu
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            OrderNotification notification = doc.toObject(OrderNotification.class);
+                            if (notification != null) {
+                                notificationList.add(notification);
+                                Log.d(TAG, "Notification: " + notification.getMessage());
+                            }
+                        }
+                        adapter.notifyDataSetChanged(); // Cập nhật lại RecyclerView
+                    }
+                });
+    }
+
+    /**
+     * Hàm thêm thông báo vào Firestore cho user tương ứng
+     */
+    public void addNotificationForUser(String userId, OrderNotification notification) {
+        if (notification.getTimestamp() == null) {
+            notification.setTimestamp(Timestamp.now());
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .collection("notifications")
+                .add(notification)
+                .addOnSuccessListener(documentReference ->
+                        Log.d(TAG, "✔️ Thêm thông báo thành công: " + documentReference.getId()))
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "❌ Thêm thông báo thất bại", e));
+    }
+
+    /**
+     * Hàm test thêm thông báo mẫu (có thể gọi để thử)
+     */
+    private void testAddNotification() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        OrderNotification testNotification = new OrderNotification(
+                "testOrderId",
+                "Đơn hàng của bạn đang được xử lý",
+                "Chờ xử lý",
+                Timestamp.now()
+        );
+
+        addNotificationForUser(userId, testNotification);
     }
 }
