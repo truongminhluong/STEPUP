@@ -22,12 +22,19 @@ import java.util.List;
 public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHolder> {
     // Danh sách sản phẩm trong giỏ hàng
     private List<CartItem> cartItemList;
-
+    private OnDeleteClickListener deleteClickListener;
+    private OnQuantityChangeListener quantityChangeListener;
     // Constructor nhận danh sách sản phẩm trong giỏ hàng
     public MyCartAdapter(List<CartItem> cartItemList) {
         this.cartItemList = cartItemList;
     }
-
+    public MyCartAdapter(List<CartItem> cartItemList,
+                         OnDeleteClickListener deleteClickListener,
+                         OnQuantityChangeListener quantityChangeListener) {
+        this.cartItemList = cartItemList;
+        this.deleteClickListener = deleteClickListener;
+        this.quantityChangeListener = quantityChangeListener;
+    }
     @NonNull
     @Override
     public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -62,10 +69,10 @@ public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHo
         }
 
         public void bind(CartItem cartItem) {
-            txtCartProductName.setText(cartItem.getName());
+            txtCartProductName.setText(cartItem.getProductName());
             txtCartProductPrice.setText(String.valueOf(cartItem.getPrice()));
             txtCartProductQuantity.setText(String.valueOf(cartItem.getQuantity()));
-            Bitmap bitmap = decodeBase64ToBitmap(cartItem.getImage(), itemView.getContext()); // Truyền Context vào đây
+            Bitmap bitmap = decodeBase64ToBitmap(cartItem.getImageUrl(), itemView.getContext()); // Truyền Context vào đây
             imgCartProduct.setImageBitmap(bitmap);
         }
     }
@@ -99,5 +106,15 @@ public class MyCartAdapter extends RecyclerView.Adapter<MyCartAdapter.CartViewHo
             Log.e("Base64Error", "Lỗi không xác định", e);
             return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_nike); // Placeholder image
         }
+    }
+    // Interface xử lý nút xoá
+    public interface OnDeleteClickListener {
+        void onDeleteClick(CartItem cartItem, int position);
+    }
+
+    // Interface xử lý tăng/giảm số lượng
+    public interface OnQuantityChangeListener {
+        void onIncrease(CartItem cartItem, int position);
+        void onDecrease(CartItem cartItem, int position);
     }
 }

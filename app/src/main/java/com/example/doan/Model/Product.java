@@ -25,6 +25,9 @@ public class Product implements Serializable {
         return variants;
     }
 
+    // 🔧 Constructor không tham số là BẮT BUỘC
+    public Product() {
+    }
     public Product(String s) {
     }
 
