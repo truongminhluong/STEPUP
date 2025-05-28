@@ -34,11 +34,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Screens.VnpayResultActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -46,11 +44,10 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="doanapp"
-                    android:host="vnpay" />
+                    android:host="vnpay"
+                    android:scheme="doanapp" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Auth.SignInActivity"
             android:exported="true"

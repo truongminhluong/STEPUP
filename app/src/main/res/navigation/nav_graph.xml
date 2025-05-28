@@ -22,9 +22,9 @@
         tools:layout="@layout/fragment_cart"/>
     <fragment
         android:id="@+id/notificationFragment"
-        android:name="com.example.doan.NavigationBar.NotificationFragment"
+        android:name="com.example.doan.NavigationBar.OrderFragment"
         android:label="Notification"
-        tools:layout="@layout/fragment_notification"/>
+        tools:layout="@layout/fragment_order"/>
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.doan.NavigationBar.ProfileFragment"

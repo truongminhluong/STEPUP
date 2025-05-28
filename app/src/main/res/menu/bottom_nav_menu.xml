@@ -11,7 +11,7 @@
         android:title=""/>
     <item
         android:id="@+id/notificationFragment"
-        android:icon="@drawable/ic_notification"
+        android:icon="@drawable/img_10"
         android:title="" />
     <item
         android:id="@+id/profileFragment"

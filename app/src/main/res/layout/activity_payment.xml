@@ -288,14 +288,14 @@
             <ImageView
                 android:layout_width="52dp"
                 android:layout_height="52dp"
-                android:src="@drawable/momo" />
+                android:src="@drawable/images" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginLeft="14dp"
-                android:text="Thanh toán bằng Momo"
+                android:text="Thanh toán bằng VnPay"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />

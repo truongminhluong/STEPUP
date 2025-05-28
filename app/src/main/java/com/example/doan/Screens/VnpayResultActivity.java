@@ -1,13 +1,22 @@
 package com.example.doan.Screens;
 
+import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,6 +39,17 @@ public class VnpayResultActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_vnpay_result);
         handleVnpayResponse();
+        setupNotification();
+    }
+
+    private void setupNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 200);
+            }
+        }
     }
 
     private void handleVnpayResponse() {
@@ -44,6 +64,7 @@ public class VnpayResultActivity extends AppCompatActivity {
                 updateOrderStatus(vnp_TxnRef, "Đang xử lý");
                 String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 clearCart(userId);
+                showOrderNotification();
                 Toast.makeText(this, "Thanh toán thành công. Mã giao dịch: " + vnp_TxnRef, Toast.LENGTH_LONG).show();
                 showSuccessDialog();
             } else {
@@ -55,6 +76,50 @@ public class VnpayResultActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Không nhận được kết quả thanh toán", Toast.LENGTH_SHORT).show();
             finish();
+        }
+    }
+
+    private void showOrderNotification() {
+
+        String channelId = "order_channel_id";
+        String channelName = "Order Notifications";
+
+        // Tạo Notification Channel cho Android 8+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel.setDescription("Thông báo về đơn hàng");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        // Intent khi bấm vào thông báo
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_success) // Thay bằng icon có sẵn trong drawable
+                .setContentTitle("Đặt hàng thành công")
+                .setContentText("Cảm ơn bạn đã mua hàng! Đơn hàng của bạn đang được xử lý.")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        // Kiểm tra quyền trước khi gửi thông báo (Android 13+)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, builder.build());
         }
     }
 

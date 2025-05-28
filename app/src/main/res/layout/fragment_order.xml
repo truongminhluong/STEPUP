@@ -3,12 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NavigationBar.NotificationFragment">
+
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".NavigationBar.OrderFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="80dp"
+        android:id="@+id/recycler_orders"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="3" />
+        android:layout_height="match_parent"/>
 
 </FrameLayout>
